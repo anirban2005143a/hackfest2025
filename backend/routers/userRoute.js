@@ -39,7 +39,7 @@ router.get("/logout", authMiddleware.authUser, userController.logoutUser);
 //   savingresponse.savingresponse
 // );
 router.post("/savechathistory", savingresponse.savingresponse);
-router.get("/getchathistory", savingresponse.getchathistory);
+router.post("/getchathistory", savingresponse.getchathistory);
 router.post("/updatechatquestion", savingresponse.updatechathistory);
 router.post("/deletechathistory", savingresponse.deletechathistory);
 router.post("/setarchievehistory", savingresponse.setarchievechat);
