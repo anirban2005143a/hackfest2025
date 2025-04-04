@@ -1,0 +1,45 @@
+# Ignore virtual environment folders
+venv/
+aiml/
+Include/
+Lib/
+Scripts/
+pyvenv.cfg
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore environment variables file
+.env
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore virtual environments
+venv/
+.env/
+.venv/
+
+
+# Ignore log files
+*.log
+
+# Ignore environment variable files
+.env
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore other large files
+*.csv
+*.tsv
+*.json
+*.parquet
+*.xlsx
+
+# Ignore temporary system files
+.DS_Store
+Thumbs.db
