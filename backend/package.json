@@ -1,13 +1,31 @@
 {
+  "name": "hackfest2025",
+  "version": "1.0.0",
+  "description": "Hackfest 2025 Backend",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon -r dotenv/config server.js"
+  },
+  "author": "Vaibhav Aryan",
+  "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
     "express-validator": "^7.2.1",
+    "http": "^0.0.1-security",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.13.2",
-    "nodemon": "^3.1.9"
+    "mongoose": "^8.8.2",
+    "socket.io": "^4.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
