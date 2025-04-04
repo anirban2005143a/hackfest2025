@@ -7,7 +7,7 @@ const savingresponse = async (req, res) => {
     const { question, answer, uniqueId, user_id, title } = req.body;
     console.log(req.body);
     if (!question || !answer || !uniqueId || !user_id) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({error: true , message: "All fields are required" });
     }
     const chat = await ChatHistory.findOne({ chatId: uniqueId });
     console.log(chat);
@@ -27,7 +27,7 @@ const savingresponse = async (req, res) => {
       await newchat.save();
       return res
         .status(200)
-        .json({ message: "Chat history saved successfully" });
+        .json({ error: false , message: "Chat history saved successfully" });
     } else {
       chat.chatList.push({
         question: question,
@@ -36,11 +36,11 @@ const savingresponse = async (req, res) => {
       await chat.save();
       return res
         .status(200)
-        .json({ message: "Chat history updated successfully" });
+        .json({  error: false , message: "Chat history updated successfully" });
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: `Internal server error ${error}` });
+    return res.status(500).json({ error: true , message: error.message });
   }
 };
 
@@ -52,12 +52,12 @@ const getchathistory = async (req, res) => {
     }
     const chat = await ChatHistory.find({ userId: user_id });
     if (!chat) {
-      return res.status(404).json({ message: "No chat history found" });
+      return res.status(404).json({error: true , message: "No chat history found" });
     }
-    return res.status(200).json(chat);
+    return res.status(200).json({error : false , chat});
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: `Internal server error ${error}` });
+    return res.status(500).json({error: true , message: error.message });
   }
 };
 
@@ -65,53 +65,53 @@ const updatechathistory = async (req, res) => {
   try {
     const { newchat, chatId } = req.body;
     if (!newchat || !chatId) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({error: true , message: "All fields are required" });
     }
     const chat = await ChatHistory.findOne({ chatId: chatId });
     if (!chat) {
-      return res.status(404).json({ message: "No chat history found" });
+      return res.status(404).json({error: true , message: "No chat history found" });
     }
     // here newchat is a array
     chat.chatList = newchat;
     await chat.save();
     return res
       .status(200)
-      .json({ message: "Chat history updated successfully" });
+      .json({error  :false , message: "Chat history updated successfully" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: `Internal server error ${error}` });
+    return res.status(500).json({error: true , message: error.message });
   }
 };
 
 const deletechathistory = async (req, res) => {
   const { chatId } = req.body;
   if (!chatId) {
-    return res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({error: true , message: "All fields are required" });
   }
   try {
     const chat = await ChatHistory.findOneAndDelete({ chatId: chatId });
     if (!chat) {
-      return res.status(404).json({ message: "No chat history found" });
+      return res.status(404).json({ error: true ,message: "No chat history found" });
     }
 
     return res
       .status(200)
-      .json({ message: "Chat history deleted successfully" });
+      .json({error: false , message: "Chat history deleted successfully" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: `Internal server error ${error}` });
+    return res.status(500).json({error: true , message: error.message });
   }
 };
 
 const setarchievechat = async (req, res) => {
   const { chatId } = req.body;
   if (!chatId) {
-    return res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({error: true , message: "All fields are required" });
   }
   try {
     const chat = await ChatHistory.findOne({ chatId: chatId });
     if (!chat) {
-      return res.status(404).json({ message: "No chat history found" });
+      return res.status(404).json({error: true , message: "No chat history found" });
     }
 
     chat.isarchieve = true;
@@ -119,10 +119,10 @@ const setarchievechat = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Chat history archived successfully" });
+      .json({error : false , message: "Chat history archived successfully" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: `Internal server error ${error}` });
+    return res.status(500).json({error: true , message: error.message });
   }
 };
 module.exports = {

@@ -4,10 +4,10 @@ import { gsap } from 'gsap';
 import logoImg from '/vite.svg';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogIn, LogOut, Settings , PanelLeftOpen , PanelLeftClose } from 'lucide-react';
+import { LogIn, LogOut, Settings, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import defaultUserImg from "/user.png"
 
-const Navbar = ({setIsNavOpen , isNavOpen}) => {
+const Navbar = ({ setIsNavOpen, isNavOpen }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [darkMode, setDarkMode] = useState(true);
     const menuRef = useRef(null);
@@ -113,6 +113,8 @@ const Navbar = ({setIsNavOpen , isNavOpen}) => {
         </div>
     );
 
+
+
     // GSAP animation for mobile menu
     useEffect(() => {
         if (isMenuOpen) {
@@ -144,57 +146,11 @@ const Navbar = ({setIsNavOpen , isNavOpen}) => {
         }
     }, [isMenuOpen]);
 
-    // GSAP animations for logo and borders
-    // useEffect(() => {
-    //     // Animate the logo and its circular border
-    //     gsap.fromTo(
-    //         logoBorderRef.current,
-    //         { scale: 0, opacity: 0 },
-    //         { scale: 1, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.5 }
-    //     );
-    //     gsap.fromTo(
-    //         logoBorderMobileRef.current,
-    //         { scale: 0, opacity: 0 },
-    //         { scale: 1, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.5 }
-    //     );
 
-    //     // Animate the left 
-    //     gsap.fromTo(
-    //         [leftTopBorderRef.current, leftBottomBorderRef.current],
-    //         { scaleX: 0 },
-    //         { scaleX: 1, duration: 1, ease: 'power3.out', delay: 0.2 }
-    //     );
-    //     // Animate the right borders
-    //     gsap.fromTo(
-    //         [rightTopBorderRef.current, rightBottomBorderRef.current],
-    //         { scaleX: 0 },
-    //         { scaleX: 1, duration: 1, ease: 'power3.out', delay: 0.2 }
-    //     );
-
-    //     // Animate the menu items
-    //     const navMenu = document.querySelectorAll('.nav-menu');
-    //     gsap.fromTo(
-    //         navMenu,
-    //         { y: -100, opacity: 0 },
-    //         { y: 0, opacity: 1, duration: 1, stagger: 0.2, delay: 0.1 }
-    //     );
-
-    //     // Animate the logo image
-    //     gsap.fromTo(
-    //         logoImgRef.current,
-    //         { y: -100, opacity: 0 },
-    //         { y: 0, opacity: 1, duration: 0.8 }
-    //     );
-    //     gsap.fromTo(
-    //         logoImgMobileRef.current,
-    //         { y: -100, opacity: 0 },
-    //         { y: 0, opacity: 1, duration: 0.8 }
-    //     );
-    // }, []);
 
     return (
         <motion.nav
-            className="fixed w-full z-10 py-2 "
+            className="fixed w-full z-10 h-[60px] "
             initial={{ y: 0 }}
             animate={{ y: isVisible ? 0 : '-100%' }}
             transition={{ duration: 0.4, ease: 'easeInOut' }}
@@ -210,12 +166,12 @@ const Navbar = ({setIsNavOpen , isNavOpen}) => {
                                 </span>
                             </Link>
                             {window.location.pathname.includes("/chat") && <button
-                                onClick={()=>{
+                                onClick={() => {
                                     setIsNavOpen(!isNavOpen);
                                 }}
                                 className=" cursor-pointer  text-white px-4 py-2 rounded-lg shadow-lg"
                             >
-                                {isNavOpen ?  <PanelLeftClose/> : <PanelLeftOpen/>}
+                                {isNavOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
                             </button>}
                         </div>
 
@@ -235,22 +191,35 @@ const Navbar = ({setIsNavOpen , isNavOpen}) => {
 
                 {/* Mobile Navbar */}
                 <div className="md:hidden flex justify-between items-center py-4">
+                    <div className=' flex items-center justify-between  '>
+                        {/* Logo on the left */}
+                        <Link to='/'>
+                            <div className="h-12 w-12  p-1.5 mx-2 relative flex items-center justify-center">
+                                <div
+                                    ref={logoBorderMobileRef}
+                                    className="absolute inset-0 border-[1px] w-full h-full  rounded-full transform "
+                                />
+                                <img
+                                    ref={logoImgRef}
+                                    src={logoImg}
+                                    alt="Logo"
+                                    className="w-full h-full relative   "
+                                />
+                            </div>
+                        </Link>
 
-                    {/* Logo on the left */}
-                    <Link to='/'>
-                        <div className="h-12 w-12  p-1.5 mx-2 relative flex items-center justify-center">
-                            <div
-                                ref={logoBorderMobileRef}
-                                className="absolute inset-0 border-[1px] w-full h-full bg-white border-white rounded-full transform "
-                            />
-                            <img
-                                ref={logoImgRef}
-                                src={logoImg}
-                                alt="Logo"
-                                className="w-full h-full relative   "
-                            />
-                        </div>
-                    </Link>
+                        {window.location.pathname.includes("/chat") && <button
+                            onClick={() => {
+                                setIsNavOpen(!isNavOpen);
+                            }}
+                            // onBlur={() => {
+                            //     setIsNavOpen(false)
+                            // }}
+                            className=" cursor-pointer  text-white px-4 py-2 rounded-lg shadow-lg"
+                        >
+                            {isNavOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
+                        </button>}
+                    </div>
 
                     <div className=' flex items-center gap-4'>
                         <UserDropdown />
