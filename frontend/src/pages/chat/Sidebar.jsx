@@ -15,7 +15,7 @@ const Sidebar = (props) => {
     >
       <div className="p-4 flex flex-col  transition-all duration-50 overflow-x-hidden overflow-y-auto h-full " style={{ opacity: props.isNavOpen ? "1" : "0" }}>
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-white">Your chat</h2>
+          <h2 className="text-md font-semibold text-white">Your chat</h2>
           <button onClick={handelAddNewChat} className="px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer">
             <Plus />
           </button>

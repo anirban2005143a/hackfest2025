@@ -22,8 +22,7 @@ const ChatInterface = () => {
         <Navbar isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />
         {/* Main content area */}
 
-        <div className="workSpace pt-20  h-full">
-
+        <div className="workSpace pt-[70px] h-full">
           <div className="flex md:flex-row flex-col h-full">
             {/* navigation panel  */}
             <Sidebar

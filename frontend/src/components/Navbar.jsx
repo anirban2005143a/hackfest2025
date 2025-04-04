@@ -194,7 +194,7 @@ const Navbar = ({setIsNavOpen , isNavOpen}) => {
 
     return (
         <motion.nav
-            className="fixed w-full z-10 py-2 "
+            className="fixed w-full z-10 h-[60px] "
             initial={{ y: 0 }}
             animate={{ y: isVisible ? 0 : '-100%' }}
             transition={{ duration: 0.4, ease: 'easeInOut' }}
