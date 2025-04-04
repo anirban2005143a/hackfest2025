@@ -3,7 +3,8 @@ const router = express.Router();
 const { body } = require("express-validator");
 const userController = require("../controllers/userController");
 const authMiddleware = require("../middlewares/auth");
-const savingresponse = require("../controllers/chatsave");
+
+
 router.post(
   "/register",
   [
@@ -32,16 +33,5 @@ router.post(
 router.get("/profile", authMiddleware.authUser, userController.getUserProfile);
 
 router.get("/logout", authMiddleware.authUser, userController.logoutUser);
-// chat history
-// router.post(
-//   "/savechathistory",
-//   authMiddleware.authUser,
-//   savingresponse.savingresponse
-// );
-router.post("/savechathistory", savingresponse.savingresponse);
-router.get("/getchathistory", savingresponse.getchathistory);
-router.post("/updatechatquestion", savingresponse.updatechathistory);
-router.post("/deletechathistory", savingresponse.deletechathistory);
-router.post("/setarchievehistory", savingresponse.setarchievechat);
 
 module.exports = router;

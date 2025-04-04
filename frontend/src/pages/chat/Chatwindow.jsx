@@ -44,6 +44,42 @@ const ChatWindow = () => {
     // Shift+Enter will naturally create a new line
   };
 
+  //save chat question and answer to database
+  const saveChat = async (question, answer, uniqueId, user_id, title) => {
+    const apiUrl = `${import.meta.env.VITE_REACT_APP_API_URL}/api/savechathistory`
+
+    const requestBody = {
+      question: question,
+      answer: answer,
+      uniqueId: uniqueId,
+      user_id: localStorage.getItem("userId"),
+      title: title,
+    };
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Success:", result.message);
+        return result;
+      } else {
+        console.error("Error:", result.message);
+        return result;
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      return { error: true, message: error.message };
+    }
+  }
+
   // Auto-resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
@@ -83,9 +119,9 @@ const ChatWindow = () => {
                 )}
               </div>
               <div
-                className={`px-4 py-2 rounded-lg ${message.role === 'assistant'
-                  ? 'bg-gray-800 text-gray-100'
-                  : 'bg-blue-600 text-white'
+                className={`px-4 py-2 w-full over  ${message.role === 'assistant'
+                  ? 'bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl'
+                  : 'bg-blue-600 text-white rounded-br-2xl rounded-l-2xl'
                   }`}
               >
                 <p className="text-sm">{message.content}</p>
@@ -94,28 +130,6 @@ const ChatWindow = () => {
           </div>
         ))}
       </div>
-
-      {/* Input Form */}
-      {/* <div className="border-t border-gray-700 bg-gray-800 p-4">
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-        <div className="relative flex items-center">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="w-full p-2 pr-10 rounded-lg border border-gray-600 bg-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors placeholder-gray-400"
-          />
-          <button
-            type="submit"
-            className="absolute right-2 p-1 text-gray-400 hover:text-blue-400 transition-colors disabled:opacity-50"
-            disabled={!input.trim()}
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
-      </form>
-    </div> */}
 
       {/* Input Form */}
       <div className="border-t border-gray-700 bg-gray-800 p-4">
