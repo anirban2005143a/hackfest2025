@@ -1,7 +1,6 @@
-
-
 import React, { useState } from 'react';
 import { User, Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -80,17 +79,99 @@ function Signup() {
     }));
   };
 
-  return (
-    <div id='signup' className="py-25 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-8 border border-gray-700">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-gray-400">Join us today and start your journey</p>
-        </div>
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
+  };
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: { 
+      scale: 1.02,
+      backgroundColor: "#6366f1" // indigo-600
+    },
+    tap: { 
+      scale: 0.98,
+      backgroundColor: "#4f46e5" // indigo-700
+    }
+  };
+
+  const inputFocusVariants = {
+    focus: {
+      borderColor: "#818cf8", // indigo-400
+      boxShadow: "0 0 0 2px rgba(129, 140, 248, 0.5)"
+    }
+  };
+
+  return (
+    <motion.div 
+      id='signup' 
+      className="py-25 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div 
+        className="bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-8 border border-gray-700"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ 
+          type: "spring",
+          stiffness: 100,
+          damping: 10
+        }}
+      >
+        <motion.div 
+          className="text-center mb-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.h1 
+            className="text-3xl font-bold text-white mb-2"
+            variants={itemVariants}
+          >
+            Create Account
+          </motion.h1>
+          <motion.p 
+            className="text-gray-400"
+            variants={itemVariants}
+          >
+            Join us today and start your journey
+          </motion.p>
+        </motion.div>
+
+        <motion.form 
+          onSubmit={handleSubmit} 
+          className="space-y-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div 
+            className="grid grid-cols-2 gap-4"
+            variants={containerVariants}
+          >
+            <motion.div variants={itemVariants}>
               <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="firstName">
                 First Name
               </label>
@@ -98,7 +179,7 @@ function Signup() {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-gray-500" />
                 </div>
-                <input
+                <motion.input
                   type="text"
                   id="firstName"
                   name="firstName"
@@ -106,8 +187,9 @@ function Signup() {
                   onChange={handleChange}
                   className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
                     errors.firstName ? 'border-red-500' : 'border-gray-600'
-                  } border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-gray-400`}
+                  } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                   placeholder="John"
+                  whileFocus={inputFocusVariants.focus}
                 />
                 {errors.firstName && (
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -116,11 +198,18 @@ function Signup() {
                 )}
               </div>
               {errors.firstName && (
-                <p className="mt-1 text-sm text-red-400">{errors.firstName}</p>
+                <motion.p 
+                  className="mt-1 text-sm text-red-400"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  {errors.firstName}
+                </motion.p>
               )}
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div variants={itemVariants}>
               <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="lastName">
                 Last Name
               </label>
@@ -128,7 +217,7 @@ function Signup() {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-gray-500" />
                 </div>
-                <input
+                <motion.input
                   type="text"
                   id="lastName"
                   name="lastName"
@@ -136,8 +225,9 @@ function Signup() {
                   onChange={handleChange}
                   className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
                     errors.lastName ? 'border-red-500' : 'border-gray-600'
-                  } border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-gray-400`}
+                  } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                   placeholder="Doe"
+                  whileFocus={inputFocusVariants.focus}
                 />
                 {errors.lastName && (
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -146,12 +236,19 @@ function Signup() {
                 )}
               </div>
               {errors.lastName && (
-                <p className="mt-1 text-sm text-red-400">{errors.lastName}</p>
+                <motion.p 
+                  className="mt-1 text-sm text-red-400"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  {errors.lastName}
+                </motion.p>
               )}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={itemVariants}>
             <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="email">
               Email Address
             </label>
@@ -159,7 +256,7 @@ function Signup() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Mail className="h-5 w-5 text-gray-500" />
               </div>
-              <input
+              <motion.input
                 type="email"
                 id="email"
                 name="email"
@@ -167,8 +264,9 @@ function Signup() {
                 onChange={handleChange}
                 className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
                   errors.email ? 'border-red-500' : 'border-gray-600'
-                } border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-gray-400`}
+                } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                 placeholder="john.doe@example.com"
+                whileFocus={inputFocusVariants.focus}
               />
               {errors.email && (
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -177,11 +275,18 @@ function Signup() {
               )}
             </div>
             {errors.email && (
-              <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+              <motion.p 
+                className="mt-1 text-sm text-red-400"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                {errors.email}
+              </motion.p>
             )}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={itemVariants}>
             <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="password">
               Password
             </label>
@@ -189,7 +294,7 @@ function Signup() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-500" />
               </div>
-              <input
+              <motion.input
                 type="password"
                 id="password"
                 name="password"
@@ -197,8 +302,9 @@ function Signup() {
                 onChange={handleChange}
                 className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
                   errors.password ? 'border-red-500' : 'border-gray-600'
-                } border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-gray-400`}
+                } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                 placeholder="••••••••"
+                whileFocus={inputFocusVariants.focus}
               />
               {errors.password && (
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -207,11 +313,18 @@ function Signup() {
               )}
             </div>
             {errors.password && (
-              <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+              <motion.p 
+                className="mt-1 text-sm text-red-400"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                {errors.password}
+              </motion.p>
             )}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={itemVariants}>
             <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="repeatPassword">
               Repeat Password
             </label>
@@ -219,7 +332,7 @@ function Signup() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-500" />
               </div>
-              <input
+              <motion.input
                 type="password"
                 id="repeatPassword"
                 name="repeatPassword"
@@ -227,8 +340,9 @@ function Signup() {
                 onChange={handleChange}
                 className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
                   errors.repeatPassword ? 'border-red-500' : 'border-gray-600'
-                } border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-gray-400`}
+                } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                 placeholder="••••••••"
+                whileFocus={inputFocusVariants.focus}
               />
               {errors.repeatPassword && (
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -237,27 +351,40 @@ function Signup() {
               )}
             </div>
             {errors.repeatPassword && (
-              <p className="mt-1 text-sm text-red-400">{errors.repeatPassword}</p>
+              <motion.p 
+                className="mt-1 text-sm text-red-400"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                {errors.repeatPassword}
+              </motion.p>
             )}
-          </div>
+          </motion.div>
 
-          <button
+          <motion.button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
+            variants={itemVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             <CheckCircle2 className="h-5 w-5" />
             <span>Create Account</span>
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
 
-        <p className="mt-6 text-center text-sm text-gray-400">
+        <motion.p 
+          className="mt-6 text-center text-sm text-gray-400"
+          variants={itemVariants}
+        >
           Already have an account?{' '}
           <a href="#" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
             Sign in
           </a>
-        </p>
-      </div>
-    </div>
+        </motion.p>
+      </motion.div>
+    </motion.div>
   );
 }
 

@@ -47,6 +47,9 @@ const savingresponse = async (req, res) => {
 const getchathistory = async (req, res) => {
   try {
     const { user_id } = req.body;
+    if (!user_id) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
     const chat = await ChatHistory.find({ userId: user_id });
     if (!chat) {
       return res.status(404).json({error: true , message: "No chat history found" });

@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -53,19 +53,86 @@ function Login() {
     }));
   };
 
-  return (
-    <div id='login' className="py-25 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-gray-700">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <LogIn className="h-12 w-12 text-blue-400" />
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-gray-400">Sign in to your account</p>
-        </div>
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
+  };
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: { scale: 1.02 },
+    tap: { scale: 0.98 }
+  };
+
+  return (
+    <motion.div 
+      id='login' 
+      className="py-25 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div 
+        className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-gray-700"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100 }}
+      >
+        <motion.div 
+          className="text-center mb-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div className="flex justify-center mb-4" variants={itemVariants}>
+            <motion.div
+              animate={{ 
+                rotate: [0, 10, -10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                delay: 0.5,
+                duration: 0.5 
+              }}
+            >
+              <LogIn className="h-12 w-12 text-blue-400" />
+            </motion.div>
+          </motion.div>
+          <motion.h1 className="text-3xl font-bold text-white mb-2" variants={itemVariants}>
+            Welcome Back
+          </motion.h1>
+          <motion.p className="text-gray-400" variants={itemVariants}>
+            Sign in to your account
+          </motion.p>
+        </motion.div>
+
+        <motion.form 
+          onSubmit={handleSubmit} 
+          className="space-y-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants}>
             <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="email">
               Email Address
             </label>
@@ -73,7 +140,7 @@ function Login() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Mail className="h-5 w-5 text-gray-500" />
               </div>
-              <input
+              <motion.input
                 type="email"
                 id="email"
                 name="email"
@@ -83,6 +150,10 @@ function Login() {
                   errors.email ? 'border-red-500' : 'border-gray-600'
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
                 placeholder="you@example.com"
+                whileFocus={{ 
+                  borderColor: errors.email ? "#EF4444" : "#3B82F6",
+                  boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)"
+                }}
               />
               {errors.email && (
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -91,11 +162,18 @@ function Login() {
               )}
             </div>
             {errors.email && (
-              <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+              <motion.p 
+                className="mt-1 text-sm text-red-400"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                {errors.email}
+              </motion.p>
             )}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={itemVariants}>
             <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="password">
               Password
             </label>
@@ -103,7 +181,7 @@ function Login() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-500" />
               </div>
-              <input
+              <motion.input
                 type="password"
                 id="password"
                 name="password"
@@ -113,6 +191,10 @@ function Login() {
                   errors.password ? 'border-red-500' : 'border-gray-600'
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
                 placeholder="••••••••"
+                whileFocus={{ 
+                  borderColor: errors.password ? "#EF4444" : "#3B82F6",
+                  boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)"
+                }}
               />
               {errors.password && (
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -121,11 +203,21 @@ function Login() {
               )}
             </div>
             {errors.password && (
-              <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+              <motion.p 
+                className="mt-1 text-sm text-red-400"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                {errors.password}
+              </motion.p>
             )}
-          </div>
+          </motion.div>
 
-          <div className="flex items-center justify-between">
+          <motion.div 
+            className="flex items-center justify-between"
+            variants={itemVariants}
+          >
             <div className="flex items-center">
               <input
                 id="remember-me"
@@ -143,25 +235,31 @@ function Login() {
                 Forgot password?
               </a>
             </div>
-          </div>
+          </motion.div>
 
-          <button
+          <motion.button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
+            variants={itemVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             <LogIn className="h-5 w-5" />
             <span>Sign In</span>
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
 
-        <p className="mt-6 text-center text-sm text-gray-400">
+        <motion.p 
+          className="mt-6 text-center text-sm text-gray-400"
+          variants={itemVariants}
+        >
           Don't have an account?{' '}
           <a href="#" className="text-blue-400 hover:text-blue-300 font-medium">
             Sign up
           </a>
-        </p>
-      </div>
-    </div>
+        </motion.p>
+      </motion.div>
+    </motion.div>
   );
 }
 
