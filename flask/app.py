@@ -1,69 +1,237 @@
 from flask import Flask, request, jsonify
-import pickle
-from sklearn.feature_extraction.text import TfidfVectorizer  # Example, adjust based on your model
-import os
+from huggingface_hub import login
+import openmeteo_requests
+import torch
+import json
+import re
+from datasets import load_dataset
+import requests
+from datetime import datetime
+import requests_cache
+import pandas as pd
+import copy
+from retry_requests import retry
+from tqdm.notebook import tqdm
+import time
+import numpy as np
+from typing import List, Dict, Tuple, Optional, Literal, Union, Callable, Any
+from dataclasses import dataclass
+from enum import Enum
+from tavily import TavilyClient
+from transformers import T5Tokenizer, T5ForSequenceClassification, T5ForConditionalGeneration, PreTrainedTokenizer, PreTrainedModel, AutoTokenizer, AutoModelForSeq2SeqLM, AutoConfig, AutoModel, AutoModelForCausalLM, BitsAndBytesConfig
 
 app = Flask(__name__)
 
-# Load the model and any necessary preprocessing objects
-model = None
-vectorizer = None
+# Initialize device
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def load_model():
-    global model, vectorizer
-    
-    # Load your model (adjust paths as needed)
-    model_path = 'model.pkl'  # or your .pfl file path
-    vectorizer_path = 'vectorizer.pkl'  # if you have a separate vectorizer
-    
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found at {model_path}")
-    
-    with open(model_path, 'rb') as f:
-        model = pickle.load(f)
-    
-    # If you have a separate vectorizer
-    if os.path.exists(vectorizer_path):
-        with open(vectorizer_path, 'rb') as f:
-            vectorizer = pickle.load(f)
+# Authentication (replace with your token)
+login(token='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')
 
-# Load model when starting the app
-load_model()
+# Model and tokenizer initialization
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.float16,
+    bnb_4bit_use_double_quant=True
+)
 
+llmagent = AutoModelForCausalLM.from_pretrained(
+    "mistralai/Mistral-7B-Instruct-v0.3",
+    device_map="auto",
+    trust_remote_code=True,
+    use_auth_token=True,
+    quantization_config=bnb_config
+).to(device)
+
+llmtokenizer = AutoTokenizer.from_pretrained(
+    "mistralai/Mistral-7B-Instruct-v0.3", 
+    use_auth_token=True
+)
+
+# Helper classes and functions
+class Tool:
+    def __init__(self, name: str, description: str, func: Callable):
+        self.name = name
+        self.description = description
+        self.func = func
+
+    def __call__(self, **kwargs) -> Any:
+        return self.func(**kwargs)
+
+class ToolRegistry:
+    def __init__(self):
+        self.tools: Dict[str, Tool] = {}
+    
+    def register(self, tool: Tool):
+        self.tools[tool.name] = tool
+    
+    def get_tool(self, name: str) -> Tool:
+        return self.tools.get(name)
+    
+    def get_tool_descriptions(self) -> str:
+        descriptions = []
+        for name, tool in self.tools.items():
+            descriptions.append(f"Tool: {name}\nDescription: {tool.description}")
+
+        if len(descriptions)==0:
+            descriptions.append("No Tools Available")
+        return "\n\n".join(descriptions)
+
+def prompt_template(description : str) -> str:
+    return f"""You are a helpful AI assistant that can use tools. Available tools:
+
+{description}
+
+To use a tool, output in this format:
+{{
+    "name": "tool_name",
+    "arguments": {{
+        "arg1": "value1",
+        "arg2": "value2"
+    }}
+}}
+
+Respond to the user's request, using tools whenever necessary. You are not allowed to make nested tool calls. You can only make tool calls in a sequential manner. After Answering the Question stop."""
+
+def generate_until_pattern(model, tokenizer, initial_prompt, pattern, max_length=2048):
+    eos_token_id = tokenizer.eos_token_id
+    input_ids = tokenizer.encode(initial_prompt, return_tensors='pt')
+    
+    output_tokens = copy.deepcopy(input_ids).to(device)
+    attention_mask = torch.ones_like(input_ids)
+    past_key_values = None
+    generated_text = ""
+    current_length = input_ids.shape[1]
+    
+    while current_length < max_length:
+        with torch.no_grad():
+            outputs = model(
+                input_ids=input_ids.to(device), 
+                attention_mask=attention_mask.to(device),
+                past_key_values=past_key_values
+            )
+            
+            logits = outputs.logits
+            past_key_values = outputs.past_key_values
+            next_token_logits = logits[0, -1, :]
+            next_token_id = torch.argmax(next_token_logits).unsqueeze(0).unsqueeze(0)
+            output_tokens = torch.cat([output_tokens, next_token_id], dim = -1)
+            
+            if next_token_id.item() == eos_token_id:
+                return tokenizer.decode(output_tokens[0], skip_special_tokens = True), False, None
+            
+            next_token_text = tokenizer.decode(
+                next_token_id[0],
+                skip_special_tokens=True
+            )
+            generated_text += next_token_text
+            for match in re.finditer(pattern, generated_text, re.DOTALL):
+                return tokenizer.decode(output_tokens[0], skip_special_tokens = True), True, (match.start(), match.end())
+            
+            input_ids = next_token_id
+            attention_mask = torch.ones_like(input_ids)
+            current_length += 1
+    return tokenizer.decode(output_tokens[0], skip_special_tokens = True), False, None
+
+class LLMToolCaller:
+    def __init__(self, model, tokenizer, tool_registry: ToolRegistry):
+        self.tokenizer = tokenizer
+        self.model = model
+        self.tool_registry = tool_registry
+
+    def _extract_tool_calls(self, text: str) -> List[Dict]:
+        tool_pattern = r'\{\s*"name"\s*:\s*"(.*?)"\s*,\s*"arguments"\s*:\s*\{(.*?)\}\s*\}'
+        tool_calls = []
+        for match in re.finditer(tool_pattern, text, re.DOTALL):
+            tool_calls.append(json.loads(match.group()))
+        return tool_calls
+
+    def _execute_tool_calls(self, tool_calls: List[Dict]) -> List[Dict]:
+        results = []
+        for call in tool_calls:
+            tool_name = call.get("name")
+            arguments = call.get("arguments", {})
+            tool = self.tool_registry.get_tool(tool_name)
+            if tool:
+                try:
+                    result = tool() if not arguments else tool(**arguments)
+                    results.append({
+                        "tool": tool_name,
+                        "status": "success",
+                        "result": result
+                    })
+                except Exception as e:
+                    results.append({
+                        "tool": tool_name,
+                        "status": "error",
+                        "error": repr(e)
+                    })
+            else:
+                results.append({
+                    "tool": tool_name,
+                    "status": "error",
+                    "error": "Tool not found"
+                })
+        return results
+
+    def generate_response(self, prompt: str, max_new_tokens: int = 2048) -> str:
+        system_prompt = prompt_template(self.tool_registry.get_tool_descriptions())
+        full_prompt = f"{system_prompt}\n\nUser: {prompt}\n\nAssistant:"
+        flag = True
+        while(flag):
+            inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.model.device)
+            response, flag, po = generate_until_pattern(self.model, self.tokenizer, full_prompt,
+                                r'\{\s*"name"\s*:\s*"(.*?)"\s*,\s*"arguments"\s*:\s*\{(.*?)\}\s*\}')
+            response = response[len(full_prompt):].strip()
+            tool_calls = self._extract_tool_calls(response)
+            if tool_calls:
+                results = self._execute_tool_calls(tool_calls)
+                full_prompt = f"{full_prompt}\n{response}\n\nTool Results:\n{json.dumps(results, indent=2)}"
+        tool_results_prompt = f"{full_prompt}\n\nFinal Response: "
+        inputs = self.tokenizer(tool_results_prompt, return_tensors="pt").to(self.model.device)
+        outputs = self.model.generate(
+            **inputs,
+            max_new_tokens = max_new_tokens,
+            pad_token_id = self.tokenizer.eos_token_id,
+            do_sample = False
+        )
+        final_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        return final_response[len(tool_results_prompt):].strip()
+
+# Initialize the tool registry and tool caller
+registry = ToolRegistry()
+tool_caller = LLMToolCaller(llmagent, llmtokenizer, registry)
+
+# Flask routes
 @app.route('/predict', methods=['POST'])
 def predict():
+    """Endpoint to get predictions from the AI model"""
     try:
-        # Get text input from request
         data = request.get_json()
-        text = data.get('text', '')
+        if not data or 'text' not in data:
+            return jsonify({"error": "No text provided"}), 400
         
-        if not text:
-            return jsonify({'error': 'No text provided'}), 400
+        query = data['text']
         
-        # Preprocess the text (adjust based on your model requirements)
-        if vectorizer:
-            processed_text = vectorizer.transform([text])
-        else:
-            processed_text = text  # if your model handles raw text
-        
-        # Get prediction
-        prediction = model.predict(processed_text)
-        
-        # Convert prediction to a serializable format
-        if hasattr(prediction, 'tolist'):  # for numpy arrays
-            prediction = prediction.tolist()
+        with torch.no_grad():
+            response = tool_caller.generate_response(query)
         
         return jsonify({
-            'input_text': text,
-            'prediction': prediction
+            "response": response,
+            "status": "success"
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            "error": str(e),
+            "status": "error"
+        }), 500
 
-@app.route('/')
-def home():
-    return "AI Model Prediction Service - Send a POST request to /predict with JSON containing 'text'"
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({"status": "healthy"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -11,6 +11,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import Feedback from "./pages/Feedback/Feedback.jsx";
+import About from "./pages/About/About.jsx";
 
 
 function App() {
@@ -73,6 +74,14 @@ function App() {
               element={
                 <>
                   <Navbar /> <Home />
+                </>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <>
+                  <Navbar /> <About />
                 </>
               }
             />
