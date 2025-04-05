@@ -1,294 +1,296 @@
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import DropdownMenu from "./Dropdown.jsx";
+import { useContext } from "react";
+import { User } from "lucide-react";
+import AuthContext from "../Context/Authcontext.js";
+const Navbar = (props) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [roomId, setroomId] = useState("");
+  const [inroomId, setinroomId] = useState("");
+  const [check, setCheck] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const UserdropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const toggleUserDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+  const [isLogin, setIslogin] = useState(false);
+  const { isAuthenticated } = useContext(AuthContext);
+  useEffect(() => {
+    isModalOpen
+      ? (document.body.style.overflow = "hidden")
+      : (document.body.style.overflow = "auto");
+  }, [isModalOpen]);
+  
+  return (
+    <>
+      <nav
+        id="navbar"
+        className="fixed top-0 left-0 w-full z-50 border-gray-200 "
+      >
+        <div className="w-full flex items-center justify-between p-4">
+          <Link to="/" className=" cursor-pointer flex items-center ">
+            <img
+              src="https://media.gettyimages.com/id/1129909544/vector/html-editor-glitch-effect-vector-icon-illustration.jpg?s=612x612&w=0&k=20&c=2_TWVXKmiYAFtneK9cYUvmmi1GlAe37Og0wYw8vVLMU="
+              className="h-8"
+              alt="Flowbite Logo"
+            />
+            <span className="self-center sm:block hidden text-2xl font-semibold whitespace-nowrap dark:text-white">
+              AI
+            </span>
+          </Link>
 
-import React, { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
-import logoImg from '/vite.svg';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { LogIn, LogOut, Settings, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
-import defaultUserImg from "/user.png"
+          <div
+            className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
+            id="navbar-user"
+          >
+            <ul className="flex z-50 relative flex-col font-medium p-4 md:p-0 mt-4 border md:bg-transparent bg-stone-900 border-gray-100 rounded-lg md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0  ">
+              <li>
+                <Link
+                  to="/"
+                  className={`block py-2 px-3 ${
+                    window.location.pathname === "/"
+                      ? " dark:text-blue-500 text-blue-700 "
+                      : " text-white "
+                  } rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 cursor-pointer`}
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className={`block py-2 px-3 ${
+                    window.location.pathname === "/about"
+                      ? " dark:text-blue-500 text-blue-700 "
+                      : " text-white "
+                  } rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 cursor-pointer`}
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/editor"
+                  className={`block py-2 px-3 ${
+                    window.location.pathname === "/editor"
+                      ? " dark:text-blue-500 text-blue-700 "
+                      : " text-white "
+                  } rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 cursor-pointer`}
+                >
+                  Editor
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-const Navbar = ({ setIsNavOpen, isNavOpen }) => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [darkMode, setDarkMode] = useState(true);
-    const menuRef = useRef(null);
-    const logoImgRef = useRef(null);
-    const toggleButtonRef = useRef(null);
-    const logoBorderMobileRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(true);
-    let lastScrollY = window.scrollY;
-
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
-
-    const navigate = useNavigate()
-
-    // const toggleMobileMenu = () => {
-    //     setIsMenuOpen(!isMenuOpen);
-    // };
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.scrollY > lastScrollY) {
-                setIsVisible(false); // Hide on scroll down
-            } else {
-                setIsVisible(true); // Show on scroll up
-            }
-            lastScrollY = window.scrollY;
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    // Close user dropdown when clicking outside
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsDropdownOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setIsDropdownOpen(false);
-    };
-
-
-    const UserDropdown = () => (
-        <div className=" " ref={dropdownRef}>
+          {/* user profile  */}
+          {/* from this part it is not reflecting in the ui like the user image in whcihc click two option appears sign in and signup */}
+          <div className="relative md:order-2 px-5">
             <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className=" cursor-pointer flex items-center space-x-2 bg-gray-700 rounded-full p-1 hover:bg-gray-600 transition-colors duration-200"
+              onClick={toggleUserDropdown}
+              className=" text-slate-200 px-4 py-2 rounded-lg cursor-pointer transition-colors "
             >
-                <div className="w-8 h-8 rounded-full bg-gray-800 border-2 border-blue-400 flex items-center justify-center overflow-hidden">
-                    <img
-                        src={defaultUserImg}
-                        alt="User"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                            e.target.src = '';
-                            e.target.parentElement.innerHTML = '<User className="w-5 h-5 text-gray-400" />';
-                        }}
-                    />
-                </div>
+              <User />
             </button>
 
-            {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-700">
-                    {isLoggedIn ? (
-                        <>
-                            <a
-                                href="#profile"
-                                className=" px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
-                            >
-                                <Settings className="w-4 h-4" />
-                                <span>Profile</span>
-                            </a>
-                            <button
-                                onClick={handleLogout}
-                                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 flex items-center space-x-2"
-                            >
-                                <LogOut className="w-4 h-4" />
-                                <span>Logout</span>
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            onClick={() => {
-                                setIsDropdownOpen(false)
-                                navigate("/auth/login")
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
+            {isOpen && (
+              <div
+                ref={UserdropdownRef}
+                className="absolute -translate-x-8 mt-2 px-2 w-[120px] bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50"
+              >
+                <ul className="py-2">
+                  {isAuthenticated ||
+                  localStorage.getItem("islogin") === "true" ? (
+                    <>
+                      <li>
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setIsOpen(false)}
+                          className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
                         >
-                            <LogIn className="w-4 h-4" />
-                            <span>Login</span>
-                        </button>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-
-
-
-    // GSAP animation for mobile menu
-    useEffect(() => {
-        if (isMenuOpen) {
-            // Slide in the menu from the right
-            gsap.fromTo(
-                menuRef.current,
-                { x: '100%', opacity: 0 },
-                { x: '0%', opacity: 1, duration: 0.5 }
-            );
-
-            gsap.fromTo(document.querySelectorAll('.nav-menu-mobile'), {
-                x: 100,
-                opacity: 0
-            }, {
-                x: 0,
-                opacity: 1,
-                duration: 0.5,
-                stagger: 0.2,
-                delay: 0.2,
-
-            })
-        } else {
-            // Slide out the menu to the right
-            gsap.to(menuRef.current, {
-                x: '100%',
-                opacity: 0,
-                duration: 0.5,
-            });
-        }
-    }, [isMenuOpen]);
-
-
-
-    return (
-        <motion.nav
-            className="fixed w-full z-10 h-[60px] "
-            initial={{ y: 0 }}
-            animate={{ y: isVisible ? 0 : '-100%' }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
-        >
-            <div className=" container mx-auto px-4 max-w-7xl ">
-                {/* Desktop Navbar */}
-                <div className="max-w-7xl md:block hidden mx-auto ">
-                    <div className="flex justify-between h-16 items-center">
-                        <div className="flex gap-4 items-center">
-                            <Link to='/'>
-                                <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    AI
-                                </span>
-                            </Link>
-                            {window.location.pathname.includes("/chat") && <button
-                                onClick={() => {
-                                    setIsNavOpen(!isNavOpen);
-                                }}
-                                className=" cursor-pointer  text-white px-4 py-2 rounded-lg shadow-lg"
-                            >
-                                {isNavOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
-                            </button>}
-                        </div>
-
-                        <div className="hidden md:flex items-center space-x-8">
-                            <Link to="/about" className={`font-medium ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
-                                About
-                            </Link>
-                            <Link to="/feeback" className={`font-medium ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
-                                Contact
-                            </Link>
-                            <UserDropdown />
-                        </div>
-
-
-                    </div>
-                </div>
-
-                {/* Mobile Navbar */}
-                <div className="md:hidden flex justify-between items-center py-4">
-                    <div className=' flex items-center justify-between  '>
-                        {/* Logo on the left */}
-                        <Link to='/'>
-                            <div className="h-12 w-12  p-1.5 mx-2 relative flex items-center justify-center">
-                                <div
-                                    ref={logoBorderMobileRef}
-                                    className="absolute inset-0 border-[1px] w-full h-full  rounded-full transform "
-                                />
-                                <img
-                                    ref={logoImgRef}
-                                    src={logoImg}
-                                    alt="Logo"
-                                    className="w-full h-full relative   "
-                                />
-                            </div>
+                          Profile
                         </Link>
-
-                        {window.location.pathname.includes("/chat") && <button
-                            onClick={() => {
-                                setIsNavOpen(!isNavOpen);
-                            }}
-                            // onBlur={() => {
-                            //     setIsNavOpen(false)
-                            // }}
-                            className=" cursor-pointer  text-white px-4 py-2 rounded-lg shadow-lg"
+                      </li>
+                      <li>
+                        <Link
+                          to="/"
+                          onClick={() => {
+                            localStorage.clear();
+                            window.location.reload();
+                            setIsOpen(false);
+                            // Consider adding: window.location.reload() or context logout
+                          }}
+                          className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
                         >
-                            {isNavOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
-                        </button>}
-                    </div>
-
-                    <div className=' flex items-center gap-4'>
-                        <UserDropdown />
-
-                        {/* Toggle Button */}
-                        <button
-                            ref={toggleButtonRef}
-                            onClick={() => {
-                                // console.log(menuRef.current)
-                                setIsMenuOpen(!isMenuOpen)
-                            }}
-                            className="text-white cursor-pointer focus:outline-none"
+                          Logout
+                        </Link>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <Link
+                          to="/auth/login"
+                          onClick={() => setIsOpen(false)}
+                          className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
                         >
-                            <svg
-                                className="w-10 h-10"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M4 6h16M4 12h16m-7 6h7"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                          Sign In
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/auth/signup"
+                          onClick={() => setIsOpen(false)}
+                          className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
+                        >
+                          Sign Up
+                        </Link>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
 
-                {/* Mobile Menu */}
-                <div
-                    ref={menuRef}
-                    className={`${isMenuOpen ? "" : "hidden "} md:hidden fixed top-0 right-0 h-screen w-screen  bg-[#00000084] backdrop-blur-sm shadow-lg `}
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-[5px] bg-[#2020236b] z-50">
+          <div className="bg-[#4b5563] p-8 rounded-lg shadow-2xl md:w-[600px] w-[97%] transform transition-all duration-300 ease-in-out hover:scale-100">
+            <div className="flex justify-end">
+              <button
+                onClick={handleCloseModal}
+                className="h-10 w-10 cursor-pointer text-white text-center rounded-full hover:bg-gray-700 transition-colors duration-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 384 512"
+                  className="h-6 w-6 mx-auto"
                 >
-                    <div className="px-10 pt-[50px] h-full">
-                        <button
-                            onClick={() => {
-                                setIsMenuOpen(false)
-                            }}
-                            className="text-white cursor-pointer focus:outline-none"
-                        >
-                            <svg
-                                className="w-10 h-10"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
-                        <div className=' flex flex-col items-start gap-10  pt-[20px] text-white'>
-                            <Link to='/#' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Ask AI</Link>
-                            <Link to='/#' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">About</Link>
-                            <Link to='/#' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Feedback</Link>
-                            <Link to='/#' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log out</Link>
-                        </div>
-                    </div>
-                </div>
+                  <path
+                    fill="currentColor"
+                    d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                  />
+                </svg>
+              </button>
             </div>
-        </motion.nav>
-    );
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-4xl font-bold text-white">Collaborate</h2>
+            </div>
+
+            <div className="flex justify-center gap-12 mt-5 mb-8">
+              <button
+                type="button"
+                onClick={handleCreateRoom}
+                className="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+              >
+                Generate a Room Id
+              </button>
+              <button
+                type="button"
+                onClick={handleEnterRoom}
+                className="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+              >
+                Enter a Room Id
+              </button>
+            </div>
+
+            <div className="text-center">
+              {check === "create" ? (
+                <>
+                  <div className="text-white font-bold text-2xl mb-4">
+                    Room ID: {roomId}
+                  </div>
+                  <div className="flex justify-center items-center gap-12 h-full mt-4 cursor-pointer">
+                    <div className=" p-[4px] rounded-[16px]">
+                      <button
+                        onClick={() => {
+                          navigate(`/editor?${roomId}`);
+                        }}
+                        type="button"
+                        className="text-white cursor-pointer bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                      >
+                        Enter the Room
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : check === "enter" ? (
+                <div className="flex flex-col items-center gap-4">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      console.log(roomId.length, roomId);
+                      if (roomId.length === 11) {
+                        navigate(`/editor?${roomId}`);
+                      } else {
+                        toast.error("Enter Valid room id", {
+                          position: "top-right",
+                          autoClose: 5000,
+                          hideProgressBar: false,
+                          closeOnClick: false,
+                          pauseOnHover: true,
+                          draggable: true,
+                          progress: undefined,
+                          theme: "dark",
+                        });
+                      }
+                    }}
+                    className="flex flex-col justify-center items-center max-w-sm mx-auto"
+                  >
+                    <label htmlFor="simple-search" className="sr-only">
+                      Search
+                    </label>
+                    <div className="relative w-full">
+                      <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <svg
+                          className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 18 20"
+                        >
+                          <path
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M3 5v10M3 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0V6a3 3 0 0 0-3-3H9m1.5-2-2 2 2 2"
+                          />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        autoComplete="off"
+                        onChange={(e) => {
+                          setroomId(e.target.value.trim());
+                        }}
+                        id="simple-search"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Search branch name..."
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className=" m-3 cursor-pointer text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                    >
+                      Join Room
+                    </button>
+                  </form>
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <ToastContainer />
+        </div>
+      )}
+    </>
+  );
 };
 
 export default Navbar;

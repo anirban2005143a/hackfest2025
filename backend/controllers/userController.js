@@ -7,13 +7,11 @@ module.exports.registerUser = async (req, res, next) => {
   const errors = validationResult(req);
   try {
     if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({
-          error: true,
-          validation: errors.array(),
-          message: errors.array()[0].msg,
-        });
+      return res.status(400).json({
+        error: true,
+        validation: errors.array(),
+        message: errors.array()[0].msg,
+      });
     }
 
     const { fullname, email, password } = req.body;
@@ -39,7 +37,7 @@ module.exports.registerUser = async (req, res, next) => {
 
     res.cookie("token", token);
 
-    res.status(201).json({ token, message: "User created successfully" });
+    res.status(201).json({ user, token, message: "User created successfully" });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error: true, message: error.message });
@@ -51,13 +49,11 @@ module.exports.loginUser = async (req, res, next) => {
 
   try {
     if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({
-          error: true,
-          validation: errors.array(),
-          message: errors.array()[0].msg,
-        });
+      return res.status(400).json({
+        error: true,
+        validation: errors.array(),
+        message: errors.array()[0].msg,
+      });
     }
 
     const { email, password } = req.body;
@@ -78,7 +74,7 @@ module.exports.loginUser = async (req, res, next) => {
 
     res.cookie("token", token);
 
-    res.status(200).json({ token, message: "Logged in successfully" });
+    res.status(200).json({ user, token, message: "Logged in successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: true, message: error.message });
@@ -86,7 +82,9 @@ module.exports.loginUser = async (req, res, next) => {
 };
 
 module.exports.getUserProfile = async (req, res, next) => {
-  res.status(200).json(req.user);
+  res.status(200).json({
+    message:"True"
+  });
 };
 
 module.exports.logoutUser = async (req, res, next) => {

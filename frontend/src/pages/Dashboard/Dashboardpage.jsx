@@ -29,13 +29,18 @@ function Dashboard() {
     try {
       console.log("chat history");
       const response = await axios.post(
-        "http://localhost:3000/api/getchathistory",
+        "http://localhost:3000/api/chat/getchathistory",
         {
           user_id: "67efbb1c8410de7ba2ab3e03",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
-      if (response?.data) {
-        setData(response.data);
+      if (response?.data?.chat) {
+        setData(response.data.chat);
         setLoading(false);
       }
       console.log(response);
@@ -65,7 +70,7 @@ function Dashboard() {
       return "just now";
     }
   }
-
+  
   useEffect(() => {
     getchatHistory();
   }, []);

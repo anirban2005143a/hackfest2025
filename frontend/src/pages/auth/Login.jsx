@@ -1,68 +1,87 @@
-import React, { useState } from 'react';
-import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-
+import React, { use, useState, useContext } from "react";
+import { Mail, Lock, LogIn, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import AuthContext from "../../Context/Authcontext";
 function Login() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
-  
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
   const [errors, setErrors] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
 
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      email: '',
-      password: ''
+      email: "",
+      password: "",
     };
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = "Please enter a valid email";
       isValid = false;
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
       isValid = false;
     }
 
     setErrors(newErrors);
     return isValid;
   };
-
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log('Form submitted:', formData);
-      // Handle login logic here
+    try {
+      if (validateForm()) {
+        console.log("Form submitted:", formData);
+      }
+      const response = await axios.post(
+        "http://localhost:3000/api/user/login",
+        formData
+      );
+      console.log(response);
+      if (response?.data?.token) {
+        setIsAuthenticated(true);
+        localStorage.setItem("token", response.data.token);
+        alert(response.data.message);
+        localStorage.setItem("userid", response.data.user._id);
+        navigate("/");
+      }
+      // Handle successful login (e.g., redirect to dashboard)
+    } catch (error) {
+      console.log(error);
+      alert(error.response.data.message);
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: {
         when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
@@ -73,51 +92,57 @@ function Login() {
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 10
-      }
-    }
+        damping: 10,
+      },
+    },
   };
 
   const buttonVariants = {
     hover: { scale: 1.02 },
-    tap: { scale: 0.98 }
+    tap: { scale: 0.98 },
   };
 
   return (
-    <motion.div 
-      id='login' 
+    <motion.div
+      id="login"
       className="py-25 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div 
+      <motion.div
         className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-gray-700"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100 }}
       >
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div className="flex justify-center mb-4" variants={itemVariants}>
+          <motion.div
+            className="flex justify-center mb-4"
+            variants={itemVariants}
+          >
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: [0, 10, -10, 0],
-                scale: [1, 1.1, 1]
+                scale: [1, 1.1, 1],
               }}
-              transition={{ 
+              transition={{
                 delay: 0.5,
-                duration: 0.5 
+                duration: 0.5,
               }}
             >
               <LogIn className="h-12 w-12 text-blue-400" />
             </motion.div>
           </motion.div>
-          <motion.h1 className="text-3xl font-bold text-white mb-2" variants={itemVariants}>
+          <motion.h1
+            className="text-3xl font-bold text-white mb-2"
+            variants={itemVariants}
+          >
             Welcome Back
           </motion.h1>
           <motion.p className="text-gray-400" variants={itemVariants}>
@@ -125,15 +150,18 @@ function Login() {
           </motion.p>
         </motion.div>
 
-        <motion.form 
-          onSubmit={handleSubmit} 
+        <motion.form
+          onSubmit={handleSubmit}
           className="space-y-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           <motion.div variants={itemVariants}>
-            <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="email">
+            <label
+              className="block text-sm font-medium text-gray-300 mb-1"
+              htmlFor="email"
+            >
               Email Address
             </label>
             <div className="relative">
@@ -147,12 +175,12 @@ function Login() {
                 value={formData.email}
                 onChange={handleChange}
                 className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border ${
-                  errors.email ? 'border-red-500' : 'border-gray-600'
+                  errors.email ? "border-red-500" : "border-gray-600"
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
                 placeholder="you@example.com"
-                whileFocus={{ 
+                whileFocus={{
                   borderColor: errors.email ? "#EF4444" : "#3B82F6",
-                  boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)"
+                  boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)",
                 }}
               />
               {errors.email && (
@@ -162,10 +190,10 @@ function Login() {
               )}
             </div>
             {errors.email && (
-              <motion.p 
+              <motion.p
                 className="mt-1 text-sm text-red-400"
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
               >
                 {errors.email}
@@ -174,7 +202,10 @@ function Login() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="password">
+            <label
+              className="block text-sm font-medium text-gray-300 mb-1"
+              htmlFor="password"
+            >
               Password
             </label>
             <div className="relative">
@@ -188,12 +219,12 @@ function Login() {
                 value={formData.password}
                 onChange={handleChange}
                 className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border ${
-                  errors.password ? 'border-red-500' : 'border-gray-600'
+                  errors.password ? "border-red-500" : "border-gray-600"
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
                 placeholder="••••••••"
-                whileFocus={{ 
+                whileFocus={{
                   borderColor: errors.password ? "#EF4444" : "#3B82F6",
-                  boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)"
+                  boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)",
                 }}
               />
               {errors.password && (
@@ -203,10 +234,10 @@ function Login() {
               )}
             </div>
             {errors.password && (
-              <motion.p 
+              <motion.p
                 className="mt-1 text-sm text-red-400"
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
               >
                 {errors.password}
@@ -214,32 +245,15 @@ function Login() {
             )}
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="flex items-center justify-between"
             variants={itemVariants}
-          >
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-blue-500 focus:ring-blue-500 bg-gray-700 border-gray-600 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-blue-400 hover:text-blue-300">
-                Forgot password?
-              </a>
-            </div>
-          </motion.div>
+          ></motion.div>
 
           <motion.button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
+            onSubmit={handleSubmit}
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex cursor-pointer items-center justify-center space-x-2"
             variants={itemVariants}
             whileHover="hover"
             whileTap="tap"
@@ -249,11 +263,11 @@ function Login() {
           </motion.button>
         </motion.form>
 
-        <motion.p 
+        <motion.p
           className="mt-6 text-center text-sm text-gray-400"
           variants={itemVariants}
         >
-          Don't have an account?{' '}
+          Don't have an account?{" "}
           <a href="#" className="text-blue-400 hover:text-blue-300 font-medium">
             Sign up
           </a>

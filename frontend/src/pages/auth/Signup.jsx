@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { User, Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-
+import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
+import AuthContext from '../../Context/Authcontext';
 function Signup() {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -18,6 +20,8 @@ function Signup() {
     repeatPassword: ''
   });
 
+  const navigate = useNavigate();
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
@@ -63,11 +67,32 @@ function Signup() {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log('Form submitted:', formData);
-      // Handle form submission here
+    try {
+      console.log("aagaye ");
+      if (validateForm()) {
+        console.log('Form submitted:', formData);
+      }
+      const response = await axios.post("http://localhost:3000/api/user/register",{
+        fullname:{
+          firstname: formData.firstName,
+          lastname: formData.lastName
+        },
+        email: formData.email,
+        password: formData.password,
+      })
+      console.log(response);
+      alert(response?.data?.message);
+      if(response?.data?.token){
+        setIsAuthenticated(true);
+        localStorage.setItem("token", response?.data?.token);
+        localStorage.setItem("userid", response?.data?.user?._id);
+        navigate("/");
+      }
+    } catch (error) {
+      alert(error?.response?.data?.message || "Something went wrong!");
+      console.error('Error submitting form:', error);
     }
   };
 
@@ -364,7 +389,8 @@ function Signup() {
 
           <motion.button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
+            onSubmit={handleSubmit}
+            className="w-full cursor-pointer bg-indigo-600 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
             variants={itemVariants}
             whileHover="hover"
             whileTap="tap"
