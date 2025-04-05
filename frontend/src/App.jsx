@@ -9,6 +9,7 @@ import PrivateRoute from "./components/Privateroute.jsx";
 import AuthContext from "./Context/Authcontext.js";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -52,6 +53,7 @@ function App() {
         }}
       >
         <BrowserRouter>
+        <ScrollToTop />
           <Routes>
             <Route
               path="/"
