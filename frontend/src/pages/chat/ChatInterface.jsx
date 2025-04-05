@@ -6,8 +6,11 @@ import Navbar from '../../components/Navbar';
 const ChatInterface = () => {
 
   const [isNavOpen, setIsNavOpen] = useState(window.innerWidth >= 640 ? true : false);
+  const [selectedChat, setselectedChat] = useState([]);
 
   const mainRef = useRef(null);
+
+  // console.log(selectedChat)
 
   return (
     <>
@@ -21,6 +24,7 @@ const ChatInterface = () => {
             <Sidebar
               isNavOpen={isNavOpen}
               setIsNavOpen={setIsNavOpen}
+              setselectedChat= {setselectedChat}
             />
             {/* chat window  */}
             <div
@@ -28,7 +32,10 @@ const ChatInterface = () => {
               className="h-full transition-all duration-150"
               style={{ width: window.innerWidth >= 768 ? isNavOpen ? "80%" : "100%" : "100%" }}
             >
-              <ChatWindow />
+              <ChatWindow 
+                selectedChat={selectedChat}
+                setselectedChat= {setselectedChat}
+              />
             </div>
           </div>
         </div>

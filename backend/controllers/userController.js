@@ -39,7 +39,7 @@ module.exports.registerUser = async (req, res, next) => {
 
     res.cookie("token", token);
 
-    res.status(201).json({ token, message: "User created successfully" });
+    res.status(201).json({ token, userid : user._id , message: "User created successfully" });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error: true, message: error.message });
@@ -76,9 +76,7 @@ module.exports.loginUser = async (req, res, next) => {
 
     const token = user.generateAuthToken();
 
-    res.cookie("token", token);
-
-    res.status(200).json({ token, message: "Logged in successfully" });
+    res.status(200).json({ token,userid : user._id , message: "Logged in successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: true, message: error.message });

@@ -1,37 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Send, Bot, User } from 'lucide-react';
+import { saveChatResponse } from './functions/saveChat';
+import { v4 as uuidv4 } from 'uuid';
+import { useParams } from 'react-router-dom';
 
-const ChatWindow = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      content: 'Hello! How can I help you today?',
-      role: 'assistant',
-    },
-  ]);
+const ChatWindow = ({ selectedChat, setselectedChat }) => {
+  const [messages, setMessages] = useState(selectedChat || []);
   const [input, setInput] = useState('');
+  const [question, setquestion] = useState("")
+  const [answer, setanswer] = useState("")
   const textareaRef = useRef(null);
+  const params = useParams()
+
+  const massagesRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const newMessage = {
-      id: Date.now().toString(),
-      content: input,
-      role: 'user',
+      question : input,
+      answer : [],
+      _id: uuidv4(),
+      createdAt: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, newMessage]);
+    setquestion(input)
     setInput('');
 
     // Simulate assistant response
     setTimeout(() => {
       const assistantMessage = {
-        id: (Date.now() + 1).toString(),
-        content: 'This is a simulated response. The actual integration with an AI model would go here.',
-        role: 'assistant',
+        question : null,
+        answer : ['This is a simulated response. The actual integration with an AI model would go here.'],
+        _id: uuidv4(),
+        createdAt: new Date().toISOString(),
       };
+      setanswer(assistantMessage.answer[0])
       setMessages((prev) => [...prev, assistantMessage]);
     }, 1000);
   };
@@ -46,38 +52,8 @@ const ChatWindow = () => {
 
   //save chat question and answer to database
   const saveChat = async (question, answer, uniqueId, user_id, title) => {
-    const apiUrl = `${import.meta.env.VITE_REACT_APP_API_URL}/api/savechathistory`
-
-    const requestBody = {
-      question: question,
-      answer: answer,
-      uniqueId: uniqueId,
-      user_id: localStorage.getItem("userId"),
-      title: title,
-    };
-
-    try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        console.log("Success:", result.message);
-        return result;
-      } else {
-        console.error("Error:", result.message);
-        return result;
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
-      return { error: true, message: error.message };
-    }
+    const data = await saveChatResponse(question, answer, uniqueId, user_id, title);
+    console.log(data);
   }
 
   // Auto-resize textarea based on content
@@ -97,38 +73,63 @@ const ChatWindow = () => {
     }
   }, [input]);
 
+  //save question and answer to database when answer is received
+  useEffect(() => {
+    if (answer) {
+      saveChat(question, answer, params.chatId, localStorage.getItem("userid") || "123", localStorage.getItem("chatTitle") || "New chat")
+      setanswer("")
+    }
+  }, [answer])
 
+  useEffect(() => {
+    setMessages(selectedChat)
+  }, [selectedChat])
+
+  useEffect(() => {
+    if(massagesRef.current) {
+      massagesRef.current.scrollTop = massagesRef.current.scrollHeight;
+    }
+  }, [messages])
+  
+
+  // console.log(messages)
   return (
     <div className="flex flex-col h-full">
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                }`}
-            >
-              <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                {message.role === 'assistant' ? (
-                  <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-                ) : (
-                  <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
-                )}
+      <div ref={massagesRef} className="flex-1 overflow-y-auto   p-4 space-y-4">
+       
+        {messages.map((message , ind) => {
+          // Transform question messages (user role)       
+            return (
+              <div key={ind} className=' flex flex-col gap-4'>
+                {/* Message Item */}
+                {message.question && <div className="flex justify-end">
+                  <div className="flex gap-3 max-w-[80%] flex-row-reverse">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                      <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
+                    </div>
+                    <div className="px-4 py-2 w-full bg-blue-600 text-white rounded-br-2xl rounded-l-2xl">
+                      <p className="text-sm">{message.question}</p>
+                    </div>
+                  </div>
+                </div>}
+
+                {message.answer && message.answer.length > 0 && <div className="flex justify-start">
+                   <div className="flex gap-3 max-w-[80%] flex-row">
+                     <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                       <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
+                     </div>
+                     <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
+                       <p className="text-sm">{message.answer[0]}</p>
+                     </div>
+                   </div>
+                 </div>
+                }
               </div>
-              <div
-                className={`px-4 py-2 w-full over  ${message.role === 'assistant'
-                  ? 'bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl'
-                  : 'bg-blue-600 text-white rounded-br-2xl rounded-l-2xl'
-                  }`}
-              >
-                <p className="text-sm">{message.content}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+            );
+          
+
+        })}
       </div>
 
       {/* Input Form */}

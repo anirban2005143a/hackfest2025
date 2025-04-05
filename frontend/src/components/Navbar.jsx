@@ -17,7 +17,7 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
     const [isVisible, setIsVisible] = useState(true);
     let lastScrollY = window.scrollY;
 
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -81,13 +81,16 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
                 <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-700">
                     {isLoggedIn ? (
                         <>
-                            <a
-                                href="#profile"
+                            <div 
+                                onClick={() => {
+                                    setIsDropdownOpen(false)
+                                    navigate("/profile")
+                                }}
                                 className=" px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
                             >
                                 <Settings className="w-4 h-4" />
                                 <span>Profile</span>
-                            </a>
+                            </div>
                             <button
                                 onClick={handleLogout}
                                 className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 flex items-center space-x-2"
