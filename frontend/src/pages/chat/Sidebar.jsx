@@ -99,11 +99,38 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     setInputValue("");
   };
 
+  const radnomdata = async () => {
+    // console.log("get chat history");
+    try {
+      console.log("chat history");
+      const response = await axios.post(
+        "http://localhost:3000/api/chat/getchathistory",
+        {
+          user_id: localStorage.getItem("userid"),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log(response);
+      if (response?.data?.chat) {
+        setallChats(response.data.chat);
+      }
+      console.log(response);
+    } catch (error) {
+      console.log("error in getting chat history");
+      console.log(error);
+    }
+  };
+
+
   const handleDeleteChat = async (id) => {
-    if(!id) {
+    if (!id) {
       alert("Chat ID is required to delete a chat");
       return;
-    };
+    }
     console.log(id);
     setDropdownOpen(null);
     const response = await axios.post(
@@ -119,7 +146,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
       }
     );
     alert(response?.data?.message);
-    getChatHistory(localStorage.getItem("userid"));
+    radnomdata();
   };
 
   const handleRenameChat = (id, currentName) => {
@@ -204,7 +231,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     ChatHistory();
   }, []);
 
-  console.log(allChats);
+  // console.log(allChats);
   return (
     <>
       {!isReady && <Loader />}
