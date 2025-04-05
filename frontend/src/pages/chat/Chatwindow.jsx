@@ -3,10 +3,11 @@ import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { saveChatResponse } from './functions/saveChat';
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router-dom';
+import { getChatInfo } from './functions/getChatInfo';
 
 
-const ChatWindow = ({ selectedChat, setselectedChat }) => {
-  const [messages, setMessages] = useState(selectedChat || []);
+const ChatWindow = ({ isChatInfoFetching, setisChatInfoFetching, setSelectedChatId, selectedChatId }) => {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [question, setquestion] = useState("")
   const [isFetching, setisFetching] = useState(false)
@@ -48,6 +49,14 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
     console.log(data);
   }
 
+  //function to get chat question-answer
+  const getChatQueAns = async (chatId) => {
+    const chats = await getChatInfo(chatId)
+    setMessages(chats)
+    setisChatInfoFetching(false)
+    console.log(chats)
+  }
+
   // Auto-resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
@@ -64,7 +73,6 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
       }
     }
   }, [input]);
-
 
   useEffect(() => {
     if (question) {
@@ -90,16 +98,16 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
     }
   }, [question])
 
-
-  useEffect(() => {
-    setMessages(selectedChat)
-  }, [selectedChat])
-
   useEffect(() => {
     if (massagesRef.current || isFetching) {
       massagesRef.current.scrollTop = massagesRef.current.scrollHeight;
     }
   }, [messages, isFetching])
+
+  useEffect(() => {
+    selectedChatId && getChatQueAns(selectedChatId)
+  }, [selectedChatId])
+
 
   // console.log(selectedChat)
   return (
@@ -107,7 +115,12 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
       {/* Messages Container */}
       <div ref={massagesRef} className="flex-1 overflow-y-auto   p-4 space-y-4">
 
-        {messages && messages.map((message, ind) => {
+
+        {isChatInfoFetching && <div className=' h-full w-full flex justify-center items-center  '>
+          <Loader2 size={50} color='blue' className=' animate-spin' />
+        </div>}
+
+        {!isChatInfoFetching && messages && messages.map((message, ind) => {
           // Transform question messages (user role)       
           return (
             <div key={ind} className=' flex flex-col gap-4'>
@@ -139,7 +152,7 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
           );
 
         })}
-        {isFetching && <div className="flex justify-start">
+        {!isChatInfoFetching && isFetching && <div className="flex justify-start">
           <div className="flex gap-3 max-w-[80%] flex-row">
             <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
               <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
@@ -171,6 +184,7 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
                 maxHeight: '150px',
               }}
             />
+            
             <button
               type="submit"
               className="absolute right-4 bottom-2 p-1 text-gray-400 cursor-pointer hover:text-blue-100 transition-colors disabled:opacity-50"

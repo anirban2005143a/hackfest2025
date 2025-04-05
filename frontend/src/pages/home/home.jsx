@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import FeatureCard from "./FeatureCard";
-import Loader from "../../components/loader/Loader";
+import { BarChart,MessageSquare ,LineChart , DollarSign , TrendingUp } from "lucide-react"
+// import FeatureCard from "./FeatureCard";
+// import Loader from "../../components/loader/Loader";
 import { toast, ToastContainer } from "react-toastify";
 import { TypewriterEffect } from "../../components/Typewriter.jsx";
 gsap.registerPlugin(ScrollTrigger);
@@ -14,29 +15,21 @@ function Home() {
   const buttonRefs = useRef([]);
   const sectionRefs = useRef([]);
 
-  const [isloading, setisloading] = useState(false);
+  // const [isloading, setisloading] = useState(false);
   const words = [
     {
-      text: "Real",
-      className: " text-4xl md:text-6xl lg:text-7xl", // Responsive text sizing
+      text: "Financial",
+      className: " text-4xl md:text-6xl lg:text-7xl font-bold mb-8", // Responsive text sizing
     },
     {
       text: "-",
-      className: " text-4xl md:text-6xl lg:text-7xl", // Responsive text sizing
+      className: " text-4xl md:text-6xl lg:text-7xl font-bold mb-8", // Responsive text sizing
     },
     {
-      text: "Time",
-      className: "text-4xl md:text-6xl lg:text-7xl", // Responsive text sizing
+      text: " Intelligence",
+      className: " text-4xl md:text-6xl lg:text-7xl font-bold text-blue-500  mb-8", // Responsive text sizing
     },
-    {
-      text: "-",
-      className: "text-4xl md:text-6xl lg:text-7xl", // Responsive text sizing
-    },
-    {
-      text: "Intelligence",
-      className:
-        "text-blue-500 dark:text-blue-500 text-4xl md:text-6xl lg:text-7xl", // Color + responsive sizing
-    },
+    
   ];
   //function to show alert
   const showToast = (message, err) => {
@@ -150,31 +143,30 @@ function Home() {
 
   return (
     <>
-      <ToastContainer />
-      {!isloading && (
+      {/* <ToastContainer /> */}
+      
         <div className="min-h-screen bg-gray-950 text-white">
           {/* Hero Section */}
           <div className="relative overflow-hidden min-h-screen flex items-center">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8   ">
-              <div ref={heroRef} className="text-center relative ">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div ref={heroRef} className="text-center relative">
                 <div className="mt-30 lg:mt-10">
                   <h1
                     ref={titleRef}
-                    className="lg:text-6xl md:text-5xl text-5xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 mb-6"
+                    className="text-4xl md:text-6xl lg:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-emerald-400 mb-8"
                   >
-                    <TypewriterEffect words={words} />
+                    {/* Financial Intelligence */}
+                    <TypewriterEffect words={words}/>
                     <br />
-                    <span className="lg:text-5xl md:text-4xl text-3xl">
-                      Instant Answers
+                    <span className="text-3xl md:text-5xl lg:text-6xl text-gray-100">
+                      Powered by AI
                     </span>
                   </h1>
-                  <p
-                    ref={subtitleRef}
-                    className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
-                  >
-                    Harness the power of real-time data streaming and RAG
-                    techniques to deliver accurate, up-to-the-minute answers to
-                    your questions.
+                  
+                  <p ref={subtitleRef} className="my-6 text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    Get instant insights about any company's financial data. Make
+                    informed decisions with our advanced AI-powered analytics
+                    platform.
                   </p>
                   <div className="flex md:flex-row flex-col items-center justify-center gap-6">
                     <button
@@ -194,11 +186,11 @@ function Home() {
               </div>
             </div>
           </div>
-
+  
           {/* Features Section */}
           <div
             ref={(el) => (sectionRefs.current[0] = el)}
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32"
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 "
           >
             <div className="text-center mb-20">
               <h2 className="text-4xl font-bold text-white mb-6">
@@ -209,117 +201,127 @@ function Home() {
                 seamless question-answering experience.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
                 {
-                  icon: "⚡",
-                  title: "Real-Time Processing",
+                  icon: BarChart,
+                  title: "Advanced Analytics",
                   description:
-                    "Continuously ingest and process multiple data streams including support tickets, chat transcripts, and emails.",
+                    "Deep dive into financial metrics with our advanced analytical tools",
                 },
                 {
-                  icon: "🧠",
-                  title: "Intelligent RAG",
+                  icon: MessageSquare,
+                  title: "AI Assistant",
                   description:
-                    "Advanced retrieval-augmented generation techniques ensure accurate and contextual responses.",
+                    "Get instant answers to your financial questions through our AI chat interface",
                 },
                 {
-                  icon: "🕒",
-                  title: "Always Up-to-Date",
+                  icon: LineChart,
+                  title: "Market Insights",
                   description:
-                    "Stay synchronized with the latest information, ensuring responses reflect current knowledge.",
+                    "Real-time market data and trends to keep you ahead of the curve",
                 },
                 {
-                  icon: "🔄",
-                  title: "Multi-Source Integration",
+                  icon: DollarSign,
+                  title: "Financial Forecasting",
                   description:
-                    "Seamlessly integrate various data sources into a unified knowledge base.",
+                    "Predictive analytics to help you make better financial decisions",
                 },
                 {
-                  icon: "💬",
-                  title: "Natural Interactions",
+                  icon: TrendingUp,
+                  title: "Performance Tracking",
                   description:
-                    "Engage in natural conversations with AI that understands context and nuance.",
+                    "Monitor and analyze company performance metrics in real-time",
                 },
                 {
-                  icon: "🛡️",
-                  title: "Enterprise Ready",
+                  icon: MessageSquare,
+                  title: "Smart Alerts",
                   description:
-                    "Built with security and scalability in mind, ready for enterprise deployment.",
+                    "Get notified about important financial events and market changes",
                 },
               ].map((feature, index) => (
-                <FeatureCard key={index} index={index} {...feature} />
+                <div
+                  key={index}
+                  className="bg-gray-800 rounded-xl p-8 hover:bg-gray-750 transition-all duration-300 transform hover:scale-105 hover:shadow-xl border border-gray-700"
+                >
+                  <feature.icon className="w-12 h-12 text-blue-400 mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-100 mb-4">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
               ))}
             </div>
-          </div>
-
-          {/* Use Case Section */}
-          <div
-            ref={(el) => (sectionRefs.current[1] = el)}
-            className="bg-gray-900 py-10"
-          >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-20">
-                <h2 className="text-4xl font-bold text-white mb-6">
-                  Real-World Applications
-                </h2>
-                <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                  From government policy updates to real-time flight
-                  information, our system adapts to your needs.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="bg-gradient-to-br from-indigo-600 to-purple-600 md:p-10 p-5 rounded-2xl text-white transform hover:scale-105 transition-transform duration-300 shadow-xl">
-                  <h3 className="text-3xl font-bold mb-6">
-                    Government Policy Updates 📜
-                  </h3>
-                  <p className="mb-6 text-lg opacity-90">
-                    Stay informed about the latest policy changes and
-                    regulations in real-time.
+  
+            {/* Use Case Section */}
+            <div
+              ref={(el) => (sectionRefs.current[1] = el)}
+              className="bg-gray-900 py-10 mt-20 rounded-2xl"
+            >
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-20">
+                  <h2 className="text-4xl font-bold text-white mb-6">
+                    Real-World Applications
+                  </h2>
+                  <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                    From government policy updates to real-time flight
+                    information, our system adapts to your needs.
                   </p>
-                  <ul className="space-y-4 text-lg">
-                    <li className="flex items-center">
-                      <span className="mr-3">✓</span>Immediate policy change
-                      notifications
-                    </li>
-                    <li className="flex items-center">
-                      <span className="mr-3">✓</span>Contextual understanding of
-                      regulations
-                    </li>
-                    <li className="flex items-center">
-                      <span className="mr-3">✓</span>Historical policy tracking
-                    </li>
-                  </ul>
                 </div>
-                <div className="bg-gradient-to-br from-blue-600 to-teal-500 md:p-10 p-5 rounded-2xl text-white transform hover:scale-105 transition-transform duration-300 shadow-xl">
-                  <h3 className="text-3xl font-bold mb-6">
-                    Flight Status Updates ✈️
-                  </h3>
-                  <p className="mb-6 text-lg opacity-90">
-                    Access real-time flight information and delay updates
-                    instantly.
-                  </p>
-                  <ul className="space-y-4 text-lg">
-                    <li className="flex items-center">
-                      <span className="mr-3">✓</span>Live delay notifications
-                    </li>
-                    <li className="flex items-center">
-                      <span className="mr-3">✓</span>Alternative route
-                      suggestions
-                    </li>
-                    <li className="flex items-center">
-                      <span className="mr-3">✓</span>Weather impact analysis
-                    </li>
-                  </ul>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="bg-gradient-to-br from-indigo-600 to-purple-600 md:p-10 p-5 rounded-2xl text-white transform hover:scale-105 transition-transform duration-300 shadow-xl">
+                    <h3 className="text-3xl font-bold mb-6">
+                      Government Policy Updates 📜
+                    </h3>
+                    <p className="mb-6 text-lg opacity-90">
+                      Stay informed about the latest policy changes and
+                      regulations in real-time.
+                    </p>
+                    <ul className="space-y-4 text-lg">
+                      <li className="flex items-center">
+                        <span className="mr-3">✓</span>Immediate policy change
+                        notifications
+                      </li>
+                      <li className="flex items-center">
+                        <span className="mr-3">✓</span>Contextual understanding of
+                        regulations
+                      </li>
+                      <li className="flex items-center">
+                        <span className="mr-3">✓</span>Historical policy tracking
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-600 to-teal-500 md:p-10 p-5 rounded-2xl text-white transform hover:scale-105 transition-transform duration-300 shadow-xl">
+                    <h3 className="text-3xl font-bold mb-6">
+                      Flight Status Updates ✈️
+                    </h3>
+                    <p className="mb-6 text-lg opacity-90">
+                      Access real-time flight information and delay updates
+                      instantly.
+                    </p>
+                    <ul className="space-y-4 text-lg">
+                      <li className="flex items-center">
+                        <span className="mr-3">✓</span>Live delay notifications
+                      </li>
+                      <li className="flex items-center">
+                        <span className="mr-3">✓</span>Alternative route
+                        suggestions
+                      </li>
+                      <li className="flex items-center">
+                        <span className="mr-3">✓</span>Weather impact analysis
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      )}
-      {isloading && <Loader />}
+   
     </>
-  );
-}
+  )}
 
-export default Home;
+  export default Home;
+

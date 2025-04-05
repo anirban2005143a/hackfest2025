@@ -7,11 +7,11 @@ import { getChatHistory } from './functions/getChatHistory';
 import Loader from '../../components/loader/Loader';
 import axios from 'axios';
 
-const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
+const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selectedChatId }) => {
   const [allChats, setallChats] = useState([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  // const [selectedChatId, setSelectedChatId] = useState(null);
   const [isReady, setisReady] = useState(false);
 
   const inputRef = useRef(null);
@@ -28,7 +28,6 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
       navigate(`/chat/${allChats[0].chatId}`);
     }
   }, [allChats.length, selectedChatId]);
-
 
   // Focus input when adding new chat
   useEffect(() => {
@@ -71,7 +70,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     // Add new chat to the top of the list
     setallChats((prev) => [newChat, ...prev]);
     setSelectedChatId(newChat.chatId);
-    setselectedChat([]);
+    // setselectedChat([]);
     localStorage.setItem("chatTitle", newChat.title);
     navigate(`/chat/${newChat.chatId}`);
     setIsAddingNew(false);
@@ -115,7 +114,8 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
 
   const handleChatClick = (chatId, chatList, title) => {
     setSelectedChatId(chatId);
-    setselectedChat(chatList || []);
+    setisChatInfoFetching(true)
+    // setselectedChat(chatList || []);
     localStorage.setItem("chatTitle", title);
   };
 
@@ -135,7 +135,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
         if (data.chat.length > 0)
           setSelectedChatId(data.chat[data.chat.length - 1].chatId);
         if (data.chat.length > 0)
-          setselectedChat(data.chat[data.chat.length - 1].chatList);
+          // setselectedChat(data.chat[data.chat.length - 1].chatList);
 
         setallChats(data.chat);
         if (data.chat.length === 0) saveChat("New chat");
@@ -193,7 +193,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     ChatHistory();
   }, []);
 
-  console.log(allChats)
+  // console.log(allChats)
   return (
     <>
       <ToastContainer />

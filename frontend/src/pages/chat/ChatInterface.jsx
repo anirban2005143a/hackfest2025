@@ -2,13 +2,13 @@ import React, { useRef, useState } from 'react';
 import Sidebar from './Sidebar';
 import ChatWindow from './Chatwindow';
 import Navbar from '../../components/Navbar';
-import { ToastContainer , toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 
 const ChatInterface = () => {
 
   const [isNavOpen, setIsNavOpen] = useState(window.innerWidth >= 640 ? true : false);
-  const [selectedChat, setselectedChat] = useState([]);
-
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [isChatInfoFetching, setisChatInfoFetching] = useState(true)
   const mainRef = useRef(null);
 
   // console.log(selectedChat)
@@ -19,13 +19,14 @@ const ChatInterface = () => {
         <Navbar isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />
         {/* Main content area */}
 
-        <div className="workSpace pt-[70px] h-full">
+        <div className="workSpace pt-[80px] h-full">
           <div className="sm:flex sm:flex-row h-full">
             {/* navigation panel  */}
             <Sidebar
               isNavOpen={isNavOpen}
-              setIsNavOpen={setIsNavOpen}
-              setselectedChat= {setselectedChat}
+              setisChatInfoFetching={setisChatInfoFetching}
+              setSelectedChatId={setSelectedChatId}
+              selectedChatId={selectedChatId}
             />
             {/* chat window  */}
             <div
@@ -33,9 +34,11 @@ const ChatInterface = () => {
               className="h-full transition-all duration-150"
               style={{ width: window.innerWidth >= 768 ? isNavOpen ? "100%" : "100%" : "100%" }}
             >
-              <ChatWindow 
-                selectedChat={selectedChat}
-                setselectedChat= {setselectedChat}
+              <ChatWindow
+                isChatInfoFetching={isChatInfoFetching}
+                setisChatInfoFetching={setisChatInfoFetching}
+                setSelectedChatId={setSelectedChatId}
+                selectedChatId={selectedChatId}
               />
             </div>
           </div>
