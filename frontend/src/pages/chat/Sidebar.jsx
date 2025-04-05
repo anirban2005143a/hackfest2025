@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, MoreVertical } from 'lucide-react';
+import { Plus, MoreVertical, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { ToastContainer, toast } from 'react-toastify';
 import { getChatHistory } from './functions/getChatHistory';
 import Loader from '../../components/loader/Loader';
+import axios from 'axios';
 
 const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
   const [allChats, setallChats] = useState([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(null);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isReady, setisReady] = useState(false);
 
@@ -22,32 +22,13 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
   useEffect(() => {
     if (allChats.length > 0 && !selectedChatId) {
       setSelectedChatId(allChats[0].chatId);
+      console.log(allChats[0].chatId);
       // setselectedChat(allChats[allChats.length - 1].chatList);
       localStorage.setItem("chatTitle", allChats[0].title);
       navigate(`/chat/${allChats[0].chatId}`);
     }
-  }, [allChats, selectedChatId, navigate]);
+  }, [allChats.length, selectedChatId]);
 
-  // Handle click outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        isAddingNew &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target)
-      ) {
-        setIsAddingNew(false);
-        setInputValue("");
-      }
-
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isAddingNew]);
 
   // Focus input when adding new chat
   useEffect(() => {
@@ -98,45 +79,44 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
   };
 
   const handleDeleteChat = async (id) => {
-    if(!id) {
-      alert("Chat ID is required to delete a chat");
+    if (!id) {
+      // alert("Chat ID is required to delete a chat");
+      showToast("Chat ID is required to delete a chat", 1)
       return;
     };
-    console.log(id);
-    setDropdownOpen(null);
-    const response = await axios.post(
-      "http://localhost:3000/api/chat/deletechathistory",
-      {
-        chatId: id,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    alert(response?.data?.message);
-    getChatHistory(localStorage.getItem("userid"));
-  };
 
-  const handleRenameChat = (id, currentName) => {
-    const newName = prompt("Rename chat", currentName);
-    if (newName && newName.trim() !== currentName) {
-      setallChats((prev) =>
-        prev.map((chat) =>
-          chat.chatId === id ? { ...chat, name: newName.trim() } : chat
-        )
+    try {
+      console.log(id);
+
+      const response = await axios.post(
+        "http://localhost:3000/api/chat/deletechathistory",
+        {
+          chatId: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
+      // console.log(response)
+      // alert(response?.data?.message);
+      showToast(response?.data?.message, 0)
+      !response.data.error && handelDeletechatFromArray(id)
+    } catch (error) {
+      console.log(error)
+      showToast(error.response?.data?.message || error.message, 1)
     }
+
+    // getChatHistory(localStorage.getItem("userid"));
+
   };
 
   const handleChatClick = (chatId, chatList, title) => {
     setSelectedChatId(chatId);
     setselectedChat(chatList || []);
     localStorage.setItem("chatTitle", title);
-    navigate(`/chat/${chatId}`);
-    // setIsNavOpen(!isNavOpen);
   };
 
   // Sort chats by creation date (newest first)
@@ -150,7 +130,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     try {
       setisReady(false);
       const data = await getChatHistory(localStorage.getItem("userid"));
-      console.log(data);
+      // console.log(data);
       if (!data.error) {
         if (data.chat.length > 0)
           setSelectedChatId(data.chat[data.chat.length - 1].chatId);
@@ -199,11 +179,21 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     }
   };
 
+  //delete the particular chat fromt eh all chat array
+  const handelDeletechatFromArray = (id) => {
+    setallChats((prev) => prev.filter((chat) => chat.chatId != id))
+  }
+
+  useEffect(() => {
+    navigate(`/chat/${selectedChatId}`);
+  }, [selectedChatId])
+
+
   useEffect(() => {
     ChatHistory();
   }, []);
 
-  // console.log(allChats)
+  console.log(allChats)
   return (
     <>
       <ToastContainer />
@@ -219,7 +209,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
       `}
           style={{
             width:
-              window.innerWidth >= 640 ? (isNavOpen ? "20%" : "0%") : "80%",
+              window.innerWidth >= 640 ? (isNavOpen ? "400px" : "0%") : "80%",
           }}
         >
           <div
@@ -234,9 +224,8 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
               <button
                 onClick={handleAddClick}
                 disabled={isAddingNew}
-                className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${
-                  isAddingNew ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${isAddingNew ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 <Plus size={18} />
               </button>
@@ -261,17 +250,15 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
                   return (
                     <li
                       key={ind}
-                      className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${
-                        selectedChatId === chat.chatId ? "bg-gray-700" : ""
-                      }`}
+                      className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${selectedChatId === chat.chatId ? "bg-gray-700" : ""
+                        }`}
                       onClick={() =>
                         handleChatClick(chat.chatId, chat.chatList, chat.title)
                       }
                     >
                       <span
-                        className={`flex-1 truncate px-2 py-1 ${
-                          selectedChatId === chat.chatId ? "font-medium" : ""
-                        }`}
+                        className={`flex-1 truncate px-2 py-1 ${selectedChatId === chat.chatId ? "font-medium" : ""
+                          }`}
                       >
                         {chat.title}
                       </span>

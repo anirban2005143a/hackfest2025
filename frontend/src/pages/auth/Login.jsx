@@ -139,7 +139,7 @@ function Login() {
     } catch (error) {
       console.log(error);
       // alert(error.response.data.message);
-      showToast(error.response.data.message, true)
+      showToast(error.response?.data?.message || error.message, true)
       setIsAuthenticated(false);
     } finally {
       setisLoading(false)

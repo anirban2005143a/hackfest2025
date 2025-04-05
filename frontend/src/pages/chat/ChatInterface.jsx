@@ -11,8 +11,7 @@ const ChatInterface = () => {
 
   const mainRef = useRef(null);
 
-  console.log(selectedChat)
-
+  // console.log(selectedChat)
 
   return (
     <>
@@ -32,7 +31,7 @@ const ChatInterface = () => {
             <div
               ref={mainRef}
               className="h-full transition-all duration-150"
-              style={{ width: window.innerWidth >= 768 ? isNavOpen ? "80%" : "100%" : "100%" }}
+              style={{ width: window.innerWidth >= 768 ? isNavOpen ? "100%" : "100%" : "100%" }}
             >
               <ChatWindow 
                 selectedChat={selectedChat}

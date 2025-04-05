@@ -34,7 +34,7 @@ function App() {
           },
         }
       );
-      console.log("Response from verifyAuth", response);
+      // console.log("Response from verifyAuth", response);
 
       if (response.status === 200) {
         setIsAuthenticated(true);

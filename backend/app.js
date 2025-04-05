@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const connectToDb = require('./db/db');
 const userRoutes = require('./routers/userRoute');
 const chatRoutes = require('./routers/chatRoute');
+const feedback = require('./routers/feedback');
 
 connectToDb();
 
@@ -23,8 +24,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
-
-
+app.use('/api/feedback', feedback);
 
 
 module.exports = app;

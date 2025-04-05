@@ -178,11 +178,11 @@ function Dashboard() {
     isAuthenticated && getchatHistory();
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    if (isAuthenticated === null) {
-      verifyAuth()
-    }
-  }, [isAuthenticated])
+  // useEffect(() => {
+  //   if (isAuthenticated === null) {
+  //     verifyAuth()
+  //   }
+  // }, [isAuthenticated])
 
   useEffect(() => {
     if (isAuthenticated === false) navigate("/auth/login")

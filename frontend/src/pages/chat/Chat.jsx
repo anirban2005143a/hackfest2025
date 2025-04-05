@@ -8,11 +8,11 @@ function Chat() {
 
   const { isAuthenticated, setIsAuthenticated, verifyAuth } = useContext(AuthContext);
 
-  useEffect(() => {
-    if (isAuthenticated === null) {
-      verifyAuth()
-    }
-  }, [isAuthenticated])
+  // useEffect(() => {
+  //   if (isAuthenticated === null) {
+  //     verifyAuth()
+  //   }
+  // }, [isAuthenticated])
 
     useEffect(() => {
       if(isAuthenticated === false) navigate("/auth/login")
