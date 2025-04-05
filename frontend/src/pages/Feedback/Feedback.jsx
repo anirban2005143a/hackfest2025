@@ -1,26 +1,79 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { MessageSquare, ThumbsUp, ThumbsDown, Bug, Lightbulb, Send } from 'lucide-react';
+import { MessageSquare, ThumbsUp, ThumbsDown, Bug, Lightbulb, Send, Loader2 } from 'lucide-react';
 import AuthContext from '../../Context/Authcontext';
 import Loader from '../../components/loader/Loader';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from "react-toastify"
+import axios from 'axios';
 
 function Feedback() {
+
   const [feedbackType, setFeedbackType] = useState('');
   const [feedback, setFeedback] = useState('');
   const [email, setEmail] = useState('');
+  const [isLoading, setisLoading] = useState(false)
 
-  const { isAuthenticated } = useContext(AuthContext)
+  const { isAuthenticated, setIsAuthenticated, verifyAuth } = useContext(AuthContext);
 
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle feedback submission here
-    console.log({ feedbackType, feedback, email });
-    // Reset form
-    setFeedbackType('');
-    setFeedback('');
-    setEmail('');
+  //function to show alert
+  const showToast = (message, err) => {
+    if (err) {
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    } else {
+      toast.success(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      setisLoading(true)
+
+      // Handle feedback submission here
+      // console.log({ feedbackType, feedback, email });
+      const res = await axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/api/feedback/save`, {
+        feedbackType,
+        feedback,
+        email
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      console.log(res.data)
+      showToast(res.data.message, false)
+    } catch (error) {
+      console.log(error)
+      showToast(error.response?.data?.message || error.message, true)
+    } finally {
+      // Reset form
+      setFeedbackType('');
+      setFeedback('');
+      setEmail('');
+      setisLoading(false)
+    }
+
   };
 
   const feedbackTypes = [
@@ -32,16 +85,23 @@ function Feedback() {
   ];
 
   useEffect(() => {
-    if(isAuthenticated === false){
+    if (isAuthenticated === false) {
       navigate("/auth/login")
     }
   }, [isAuthenticated])
-  
+
+  // useEffect(() => {
+  //   if (isAuthenticated === null) {
+  //     verifyAuth()
+  //   }
+  // }, [isAuthenticated])
+
 
   return (
     <>
-      {isAuthenticated===null && <Loader/>}
-      <div id='feedback' className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6 md:p-8   ">
+      <ToastContainer />
+      {!isAuthenticated && <Loader />}
+      {isAuthenticated && <div id='feedback' className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6 md:p-8   ">
         <div className="max-w-2xl mx-auto mt-[60px]">
           <h1 className="text-3xl font-bold text-gray-100 mb-8">Share Your Feedback</h1>
 
@@ -99,8 +159,8 @@ function Feedback() {
               type="submit"
               className="w-full sm:w-auto px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors duration-200"
             >
-              <Send className="w-4 h-4" />
-              Submit Feedback
+              {!isLoading && <Send className="w-4 h-4" />}
+              {isLoading ? <Loader2 className='animate-spin'/> :  "Submit Feedback"}
             </button>
           </form>
 
@@ -108,7 +168,7 @@ function Feedback() {
             Thank you for helping us improve our product
           </div>
         </div>
-      </div>
+      </div>}
     </>
   );
 }

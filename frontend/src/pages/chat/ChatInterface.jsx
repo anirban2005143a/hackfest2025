@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import Sidebar from './Sidebar';
 import ChatWindow from './Chatwindow';
 import Navbar from '../../components/Navbar';
+import { ToastContainer , toast } from 'react-toastify';
 
 const ChatInterface = () => {
 
@@ -10,7 +11,7 @@ const ChatInterface = () => {
 
   const mainRef = useRef(null);
 
-  console.log(selectedChat)
+  // console.log(selectedChat)
 
   return (
     <>
@@ -19,7 +20,7 @@ const ChatInterface = () => {
         {/* Main content area */}
 
         <div className="workSpace pt-[70px] h-full">
-          <div className="sm:flex sm:flex-row   h-full">
+          <div className="sm:flex sm:flex-row h-full">
             {/* navigation panel  */}
             <Sidebar
               isNavOpen={isNavOpen}
@@ -30,7 +31,7 @@ const ChatInterface = () => {
             <div
               ref={mainRef}
               className="h-full transition-all duration-150"
-              style={{ width: window.innerWidth >= 768 ? isNavOpen ? "80%" : "100%" : "100%" }}
+              style={{ width: window.innerWidth >= 768 ? isNavOpen ? "100%" : "100%" : "100%" }}
             >
               <ChatWindow 
                 selectedChat={selectedChat}

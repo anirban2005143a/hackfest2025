@@ -1,10 +1,12 @@
 // API Routes
-export const saveFeedback = async (req, res) => {
+const Feedback = require('../model/FeedbackModel');
+
+module.exports.saveFeedback = async (req, res) => {
     try {
         const { feedbackType, feedback, email } = req.body;
 
         if (!feedbackType || !feedback) {
-            return res.status(400).json({ message: 'Feedback type and message are required' });
+            return res.status(400).json({error : true , message: 'Feedback type and message are required' });
         }
 
         const newFeedback = new Feedback({
@@ -14,14 +16,14 @@ export const saveFeedback = async (req, res) => {
         });
 
         await newFeedback.save();
-        res.status(201).json({ message: 'Feedback submitted successfully' });
+        res.status(201).json({error : false , message: 'Feedback submitted successfully' });
     } catch (error) {
         console.error('Error submitting feedback:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({error : true , message: 'Server error' });
     }
 }
 
-export const retrieveFeedback = async (req, res) => {
+module.exports.retrieveFeedback = async (req, res) => {
     try {
         const feedbacks = await Feedback.find().sort({ createdAt: -1 });
         res.json(feedbacks);
