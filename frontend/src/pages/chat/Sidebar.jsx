@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
 import { getChatHistory } from './functions/getChatHistory';
+import Loader from '../../components/loader/Loader';
 
 const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
   const [allChats, setallChats] = useState([]);
@@ -11,6 +12,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
   const [inputValue, setInputValue] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [selectedChatId, setSelectedChatId] = useState(null);
+  const [isReady, setisReady] = useState(false)
 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -56,12 +58,13 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
 
   const handleInputKeyDown = (e) => {
     if (e.key === 'Enter') {
-      saveChat();
+      const name = inputValue.trim();
+      saveChat(name);
     }
   };
 
-  const saveChat = () => {
-    const name = inputValue.trim();
+  const saveChat = (name) => {
+
 
     if (!name) {
       alert('Chat name cannot be empty');
@@ -69,13 +72,13 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     }
 
     // Check for duplicate names
-    if (allChats.some(chat => chat.title.toLowerCase() === name.toLowerCase())) {
+    if (name !== "New chat" && allChats.some(chat => chat.title.toLowerCase() === name.toLowerCase())) {
       alert('A chat with this name already exists');
       return;
     }
 
     const newChat = {
-      title :name,
+      title: name,
       chatId: uuidv4(), // Unique ID as string
       createdAt: new Date().toISOString()
     };
@@ -111,9 +114,9 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     }
   };
 
-  const handleChatClick = (chatId, chatList , title) => {
+  const handleChatClick = (chatId, chatList, title) => {
     setSelectedChatId(chatId);
-    setselectedChat(chatList)
+    setselectedChat(chatList || [])
     localStorage.setItem("chatTitle", title);
     navigate(`/chat/${chatId}`);
     // setIsNavOpen(!isNavOpen);
@@ -126,14 +129,53 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
 
   //chat history
   const ChatHistory = async () => {
-    const data = await getChatHistory(localStorage.getItem('userid'));
-    if (!data.error) {
-      if(data.chat.length > 0) setSelectedChatId(data.chat[data.chat.length - 1].chatId);
-      if(data.chat.length > 0) setselectedChat(data.chat[data.chat.length - 1].chatList);
-
-      setallChats(data.chat)
-    } else {
+    // console.log("dfbshfb")
+    try {
+      setisReady(false)
+      const data = await getChatHistory(localStorage.getItem('userid'));
       console.log(data)
+      if (!data.error) {
+        if (data.chat.length > 0) setSelectedChatId(data.chat[data.chat.length - 1].chatId);
+        if (data.chat.length > 0) setselectedChat(data.chat[data.chat.length - 1].chatList);
+
+        setallChats(data.chat)
+        if (data.chat.length === 0) saveChat("New chat")
+      } else {
+        console.log(data)
+        showToast(data.message, true)
+      }
+    } catch (error) {
+      console.log(error)
+      showToast(error.message, true)
+    } finally {
+      setisReady(true)
+    }
+  }
+
+  //function to show alert
+  const showToast = (message, err) => {
+    if (err) {
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    } else {
+      toast.success(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
     }
   }
 
@@ -143,105 +185,108 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
 
   console.log(allChats)
   return (
-    <div
-      id="sidebar"
-      className={`
+    <>
+      {!isReady && <Loader />}
+      {isReady && <div
+        id="sidebar"
+        className={`
         z-10
         fixed sm:relative h-full bg-slate-900 overflow-x-hidden rounded-tr-2xl
         transition-all duration-300 ease-in-out
         ${isNavOpen ? 'left-0' : '-left-full sm:left-0'}
       `}
-      style={{
-        width: window.innerWidth >= 640 ? isNavOpen ? "20%" : "0%" : "80%"
-      }}
-    >
-      <div
-        className={`
+        style={{
+          width: window.innerWidth >= 640 ? isNavOpen ? "20%" : "0%" : "80%"
+        }}
+      >
+        <div
+          className={`
           p-4 flex flex-col overflow-x-hidden overflow-y-auto h-full
           transition-opacity duration-300
           ${isNavOpen ? 'opacity-100' : 'opacity-0 sm:opacity-100'}
         `}
-      >
-        <div className="flex justify-between items-center">
-          <h2 className="text-md font-semibold text-white">Your chat</h2>
-          <button
-            onClick={handleAddClick}
-            disabled={isAddingNew}
-            className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${isAddingNew ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-          >
-            <Plus size={18} />
-          </button>
-        </div>
-        <div className="my-4 h-full overflow-y-auto">
-          <ul className="space-y-2 text-white">
-            {isAddingNew && (
-              <li className="p-1">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleInputKeyDown}
-                  placeholder="Enter chat name"
-                  className="w-full bg-gray-700 text-white px-2 py-1 rounded"
-                />
-              </li>
-            )}
-            {sortedChats.map((chat , ind) => {
-              // console.log(chat)
-              return (
-              <li
-                key={ind}
-                className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${selectedChatId === chat.chatId ? 'bg-gray-700' : ''
-                  }`}
-                onClick={() => handleChatClick(chat.chatId , chat.chatList , chat.title)}
-              >
-                <span className={`flex-1 truncate px-2 py-1 ${selectedChatId === chat.chatId ? 'font-medium' : ''
-                  }`}>
-                  {chat.title}
-                </span>
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDropdownOpen(dropdownOpen === chat.chatId ? null : chat.chatId);
-                    }}
-                    className="p-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <div className="flex justify-between items-center">
+            <h2 className="text-md font-semibold text-white">Your chat</h2>
+            <button
+              onClick={handleAddClick}
+              disabled={isAddingNew}
+              className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${isAddingNew ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+            >
+              <Plus size={18} />
+            </button>
+          </div>
+          <div className="my-4 h-full overflow-y-auto">
+            <ul className="space-y-2 text-white">
+              {isAddingNew && (
+                <li className="p-1">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleInputKeyDown}
+                    placeholder="Enter chat name"
+                    className="w-full bg-gray-700 text-white px-2 py-1 rounded"
+                  />
+                </li>
+              )}
+              {sortedChats.map((chat, ind) => {
+                // console.log(chat)
+                return (
+                  <li
+                    key={ind}
+                    className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${selectedChatId === chat.chatId ? 'bg-gray-700' : ''
+                      }`}
+                    onClick={() => handleChatClick(chat.chatId, chat.chatList, chat.title)}
                   >
-                    <MoreVertical size={16} />
-                  </button>
-                  {dropdownOpen === chat.chatId && (
-                    <div className="absolute right-0 z-20 mt-1 w-32 bg-gray-800 rounded shadow-lg">
+                    <span className={`flex-1 truncate px-2 py-1 ${selectedChatId === chat.chatId ? 'font-medium' : ''
+                      }`}>
+                      {chat.title}
+                    </span>
+                    <div className="relative" ref={dropdownRef}>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRenameChat(chat.chatId, chat.name);
+                          setDropdownOpen(dropdownOpen === chat.chatId ? null : chat.chatId);
                         }}
-                        className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700"
+                        className="p-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        Rename
+                        <MoreVertical size={16} />
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm('Delete this chat?')) {
-                            handleDeleteChat(chat.chatId);
-                          }
-                        }}
-                        className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700 text-red-400"
-                      >
-                        Delete
-                      </button>
+                      {dropdownOpen === chat.chatId && (
+                        <div className="absolute right-0 z-20 mt-1 w-32 bg-gray-800 rounded shadow-lg">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRenameChat(chat.chatId, chat.name);
+                            }}
+                            className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700"
+                          >
+                            Rename
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('Delete this chat?')) {
+                                handleDeleteChat(chat.chatId);
+                              }
+                            }}
+                            className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700 text-red-400"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </li>)
-            })}
-          </ul>
+                  </li>)
+              })}
+            </ul>
+          </div>
         </div>
-      </div>
-    </div>
+      </div>}
+    </>
   );
 };
 

@@ -10,7 +10,7 @@ const ChatInterface = () => {
 
   const mainRef = useRef(null);
 
-  // console.log(selectedChat)
+  console.log(selectedChat)
 
   return (
     <>

@@ -7,14 +7,15 @@ export const getChatHistory = async (userId) => {
     };
     try {
 
-        const response = await axios.post(apiUrl, requestBody , {
+        const response = await axios.post(apiUrl, requestBody, {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
-         return {error : false , chat : response.data.chat}
+        return { error: false, chat: response.data.chat }
     } catch (error) {
         console.error("Error:", error);
-        return { error: true, message: error.message };
+        if (error.response && error.response.data) return { error: true, message: error.response.data.message || error.message }; 
+        else return { error: true, message: error.message }  
     }
 }

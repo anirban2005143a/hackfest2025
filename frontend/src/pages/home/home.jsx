@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import FeatureCard from './FeatureCard';
-import Loader from '../../components/loader/Loader';
-import { toast, ToastContainer } from "react-toastify"
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,35 +11,6 @@ function Home() {
     const subtitleRef = useRef(null);
     const buttonRefs = useRef([]);
     const sectionRefs = useRef([]);
-
-    const [isloading, setisloading] = useState(false)
-
-    //function to show alert
-    const showToast = (message, err) => {
-        if (err) {
-            toast.error(message, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "dark",
-            });
-        } else {
-            toast.success(message, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "dark",
-            });
-        }
-    }
 
     useEffect(() => {
         gsap.fromTo(titleRef.current, {
@@ -186,7 +155,7 @@ function Home() {
                     </div>
                 </div>
             </div>}
-            {isloading && <Loader />}
+          
         </>
     );
 }
