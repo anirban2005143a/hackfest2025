@@ -1,9 +1,11 @@
 import React, { useContext, useState } from 'react';
-import { User, Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { User, Lock, Mail, AlertCircle, CheckCircle2, Loader } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import {useNavigate} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../../Context/Authcontext';
+
+
 function Signup() {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -19,9 +21,10 @@ function Signup() {
     password: '',
     repeatPassword: ''
   });
-
+  const [isLoading, setisLoading] = useState(false)
   const navigate = useNavigate();
   const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
@@ -53,8 +56,8 @@ function Signup() {
     if (!formData.password) {
       newErrors.password = 'Password is required';
       isValid = false;
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
       isValid = false;
     }
 
@@ -69,22 +72,38 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      console.log("aagaye ");
-      if (validateForm()) {
-        console.log('Form submitted:', formData);
+
+    // Validate form and get isValid status
+    const isValid = validateForm();
+
+    if (!isValid) {
+      // Collect all error messages
+      const errorMessages = Object.values(errors).filter(msg => msg !== '');
+
+      // Show all errors in a single alert
+      if (errorMessages.length > 0) {
+        alert(`Please fix these errors:\n\n• ${errorMessages.join('\n• ')}`);
       }
-      const response = await axios.post("http://localhost:3000/api/user/register",{
-        fullname:{
+      return;
+    }
+
+    // Only proceed if validation passes
+    try {
+      setisLoading(true)
+      console.log("Form is valid, submitting...");
+      const response = await axios.post("http://localhost:3000/api/user/register", {
+        fullname: {
           firstname: formData.firstName,
           lastname: formData.lastName
         },
         email: formData.email,
         password: formData.password,
-      })
+      });
+
       console.log(response);
       alert(response?.data?.message);
-      if(response?.data?.token){
+
+      if (response?.data?.token) {
         setIsAuthenticated(true);
         localStorage.setItem("token", response?.data?.token);
         localStorage.setItem("userid", response?.data?.userid);
@@ -93,6 +112,8 @@ function Signup() {
     } catch (error) {
       alert(error?.response?.data?.message || "Something went wrong!");
       console.error('Error submitting form:', error);
+    } finally {
+      setisLoading(false)
     }
   };
 
@@ -102,12 +123,18 @@ function Signup() {
       ...prev,
       [name]: value
     }));
+
+    // Clear error for this field when user types
+    setErrors(prev => ({
+      ...prev,
+      [name]: ''
+    }));
   };
 
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: {
         when: "beforeChildren",
@@ -130,11 +157,11 @@ function Signup() {
   };
 
   const buttonVariants = {
-    hover: { 
+    hover: {
       scale: 1.02,
       backgroundColor: "#6366f1" // indigo-600
     },
-    tap: { 
+    tap: {
       scale: 0.98,
       backgroundColor: "#4f46e5" // indigo-700
     }
@@ -148,36 +175,36 @@ function Signup() {
   };
 
   return (
-    <motion.div 
-      id='signup' 
+    <motion.div
+      id='signup'
       className="py-25 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div 
+      <motion.div
         className="bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-8 border border-gray-700"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ 
+        transition={{
           type: "spring",
           stiffness: 100,
           damping: 10
         }}
       >
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.h1 
+          <motion.h1
             className="text-3xl font-bold text-white mb-2"
             variants={itemVariants}
           >
             Create Account
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-gray-400"
             variants={itemVariants}
           >
@@ -185,14 +212,14 @@ function Signup() {
           </motion.p>
         </motion.div>
 
-        <motion.form 
-          onSubmit={handleSubmit} 
+        <motion.form
+          onSubmit={handleSubmit}
           className="space-y-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div 
+          <motion.div
             className="grid grid-cols-2 gap-4"
             variants={containerVariants}
           >
@@ -210,9 +237,8 @@ function Signup() {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
-                    errors.firstName ? 'border-red-500' : 'border-gray-600'
-                  } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
+                  className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${errors.firstName ? 'border-red-500' : 'border-gray-600'
+                    } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                   placeholder="John"
                   whileFocus={inputFocusVariants.focus}
                 />
@@ -223,7 +249,7 @@ function Signup() {
                 )}
               </div>
               {errors.firstName && (
-                <motion.p 
+                <motion.p
                   className="mt-1 text-sm text-red-400"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -248,9 +274,8 @@ function Signup() {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
-                    errors.lastName ? 'border-red-500' : 'border-gray-600'
-                  } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
+                  className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${errors.lastName ? 'border-red-500' : 'border-gray-600'
+                    } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                   placeholder="Doe"
                   whileFocus={inputFocusVariants.focus}
                 />
@@ -261,7 +286,7 @@ function Signup() {
                 )}
               </div>
               {errors.lastName && (
-                <motion.p 
+                <motion.p
                   className="mt-1 text-sm text-red-400"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -287,9 +312,8 @@ function Signup() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
-                  errors.email ? 'border-red-500' : 'border-gray-600'
-                } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
+                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${errors.email ? 'border-red-500' : 'border-gray-600'
+                  } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                 placeholder="john.doe@example.com"
                 whileFocus={inputFocusVariants.focus}
               />
@@ -300,7 +324,7 @@ function Signup() {
               )}
             </div>
             {errors.email && (
-              <motion.p 
+              <motion.p
                 className="mt-1 text-sm text-red-400"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -325,9 +349,8 @@ function Signup() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
-                  errors.password ? 'border-red-500' : 'border-gray-600'
-                } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
+                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${errors.password ? 'border-red-500' : 'border-gray-600'
+                  } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                 placeholder="••••••••"
                 whileFocus={inputFocusVariants.focus}
               />
@@ -338,7 +361,7 @@ function Signup() {
               )}
             </div>
             {errors.password && (
-              <motion.p 
+              <motion.p
                 className="mt-1 text-sm text-red-400"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -363,9 +386,8 @@ function Signup() {
                 name="repeatPassword"
                 value={formData.repeatPassword}
                 onChange={handleChange}
-                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${
-                  errors.repeatPassword ? 'border-red-500' : 'border-gray-600'
-                } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
+                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 ${errors.repeatPassword ? 'border-red-500' : 'border-gray-600'
+                  } border rounded-lg focus:outline-none text-white placeholder-gray-400`}
                 placeholder="••••••••"
                 whileFocus={inputFocusVariants.focus}
               />
@@ -376,7 +398,7 @@ function Signup() {
               )}
             </div>
             {errors.repeatPassword && (
-              <motion.p 
+              <motion.p
                 className="mt-1 text-sm text-red-400"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -388,6 +410,7 @@ function Signup() {
           </motion.div>
 
           <motion.button
+            disabled={isLoading}
             type="submit"
             onSubmit={handleSubmit}
             className="w-full cursor-pointer bg-indigo-600 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
@@ -395,19 +418,19 @@ function Signup() {
             whileHover="hover"
             whileTap="tap"
           >
-            <CheckCircle2 className="h-5 w-5" />
-            <span>Create Account</span>
+            {!isLoading && <CheckCircle2 className="h-5 w-5" />}
+            {isLoading ? <Loader className=' animate-spin' /> : <span>Create Account</span>}
           </motion.button>
         </motion.form>
 
-        <motion.p 
+        <motion.p
           className="mt-6 text-center text-sm text-gray-400"
           variants={itemVariants}
         >
           Already have an account?{' '}
-          <a href="#" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+          <Link to='/auth/login' className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
             Sign in
-          </a>
+          </Link>
         </motion.p>
       </motion.div>
     </motion.div>

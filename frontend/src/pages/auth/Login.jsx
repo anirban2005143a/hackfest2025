@@ -1,10 +1,14 @@
 import React, { use, useState, useContext } from "react";
-import { Mail, Lock, LogIn, AlertCircle } from "lucide-react";
+import { Mail, Lock, LogIn, AlertCircle , Loader } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../Context/Authcontext";
+import { Link } from "react-router-dom";
+
+
 function Login() {
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,6 +18,35 @@ function Login() {
     email: "",
     password: "",
   });
+  const [isLoading, setisLoading] = useState(false)
+  const navigate = useNavigate();
+
+  // const validateForm = () => {
+  //   let isValid = true;
+  //   const newErrors = {
+  //     email: "",
+  //     password: "",
+  //   };
+
+  //   if (!formData.email.trim()) {
+  //     newErrors.email = "Email is required";
+  //     isValid = false;
+  //   } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+  //     newErrors.email = "Please enter a valid email";
+  //     isValid = false;
+  //   }
+
+  //   if (!formData.password) {
+  //     newErrors.password = "Password is required";
+  //     isValid = false;
+  //   } else if (formData.password.length < 6) {
+  //     newErrors.password = 'Password must be at least 6 characters';
+  //     isValid = false;
+  //   }
+
+  //   setErrors(newErrors);
+  //   return isValid;
+  // };
 
   const validateForm = () => {
     let isValid = true;
@@ -33,23 +66,65 @@ function Login() {
     if (!formData.password) {
       newErrors.password = "Password is required";
       isValid = false;
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      isValid = false;
     }
 
     setErrors(newErrors);
     return isValid;
   };
-  const navigate = useNavigate();
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     if (validateForm()) {
+  //       console.log("Form submitted:", formData);
+  //     }
+  //     const response = await axios.post(
+  //       "http://localhost:3000/api/user/login",
+  //       formData
+  //     );
+  //     console.log(response);
+  //     if (response?.data?.token) {
+  //       setIsAuthenticated(true);
+  //       localStorage.setItem("token", response.data.token);
+  //       alert(response.data.message);
+  //       localStorage.setItem("userid", response.data.userid);
+  //       navigate("/");
+  //     }
+  //     // Handle successful login (e.g., redirect to dashboard)
+  //   } catch (error) {
+  //     console.log(error);
+  //     alert(error.response.data.message);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      if (validateForm()) {
-        console.log("Form submitted:", formData);
+
+    // Validate form and get isValid status
+    const isValid = validateForm();
+
+    if (!isValid) {
+      // Collect all error messages
+      const errorMessages = Object.values(errors).filter(msg => msg !== '');
+
+      // Show all errors in a single alert
+      if (errorMessages.length > 0) {
+        alert(`Please fix these errors:\n\n• ${errorMessages.join('\n• ')}`);
       }
+      return;
+    }
+
+    // Proceed with form submission if no errors
+    try {
+      setisLoading(true)
       const response = await axios.post(
         "http://localhost:3000/api/user/login",
         formData
       );
-      console.log(response);
+
       if (response?.data?.token) {
         setIsAuthenticated(true);
         localStorage.setItem("token", response.data.token);
@@ -57,10 +132,11 @@ function Login() {
         localStorage.setItem("userid", response.data.userid);
         navigate("/");
       }
-      // Handle successful login (e.g., redirect to dashboard)
     } catch (error) {
       console.log(error);
       alert(error.response.data.message);
+    }finally{
+      setisLoading(false)
     }
   };
 
@@ -70,6 +146,14 @@ function Login() {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error for this field when user types
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   // Animation variants
@@ -174,9 +258,8 @@ function Login() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border ${
-                  errors.email ? "border-red-500" : "border-gray-600"
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
+                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border ${errors.email ? "border-red-500" : "border-gray-600"
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
                 placeholder="you@example.com"
                 whileFocus={{
                   borderColor: errors.email ? "#EF4444" : "#3B82F6",
@@ -218,9 +301,8 @@ function Login() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border ${
-                  errors.password ? "border-red-500" : "border-gray-600"
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
+                className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border ${errors.password ? "border-red-500" : "border-gray-600"
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400`}
                 placeholder="••••••••"
                 whileFocus={{
                   borderColor: errors.password ? "#EF4444" : "#3B82F6",
@@ -251,6 +333,7 @@ function Login() {
           ></motion.div>
 
           <motion.button
+            disabled = {isLoading}
             type="submit"
             onSubmit={handleSubmit}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors duration-200 flex cursor-pointer items-center justify-center space-x-2"
@@ -258,8 +341,8 @@ function Login() {
             whileHover="hover"
             whileTap="tap"
           >
-            <LogIn className="h-5 w-5" />
-            <span>Sign In</span>
+            {!isLoading && <LogIn className="h-5 w-5" />}
+           {isLoading ? <Loader className=" animate-spin"/> : <span>Sign In</span>}
           </motion.button>
         </motion.form>
 
@@ -268,9 +351,9 @@ function Login() {
           variants={itemVariants}
         >
           Don't have an account?{" "}
-          <a href="#" className="text-blue-400 hover:text-blue-300 font-medium">
+          <Link to='/auth/signup' className="text-blue-400 hover:text-blue-300 font-medium">
             Sign up
-          </a>
+          </Link>
         </motion.p>
       </motion.div>
     </motion.div>
@@ -278,3 +361,5 @@ function Login() {
 }
 
 export default Login;
+
+
