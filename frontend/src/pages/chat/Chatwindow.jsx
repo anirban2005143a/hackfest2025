@@ -1,28 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
-import { saveChatResponse } from './functions/saveChat';
-import { v4 as uuidv4 } from 'uuid';
-import { useParams } from 'react-router-dom';
-
+import React, { useEffect, useRef, useState } from "react";
+import { Send, Bot, User, Loader2, MicOff, Mic } from "lucide-react";
+import { saveChatResponse } from "./functions/saveChat";
+import { v4 as uuidv4 } from "uuid";
+import { useParams } from "react-router-dom";
 
 const ChatWindow = ({ selectedChat, setselectedChat }) => {
   const [messages, setMessages] = useState(selectedChat || []);
-  const [input, setInput] = useState('');
-  const [question, setquestion] = useState("")
-  const [isFetching, setisFetching] = useState(false)
-
-  const [isReady, setisReady] = useState(true)
-
+  const [input, setInput] = useState("");
+  const [question, setquestion] = useState("");
+  const [isFetching, setisFetching] = useState(false);
+  const [isBrowserSupported, setIsBrowserSupported] = useState(true);
+  const [isReady, setisReady] = useState(true);
+  const recognitionRef = useRef(null);
   const textareaRef = useRef(null);
   const massagesRef = useRef(null);
-  const params = useParams()
-
+  const [isListening, setIsListening] = useState(false);
+  const params = useParams();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    setisReady(false)
-    const newMessage = {
+    setisReady(false);
+    const newMessage = {  
       question: input,
       answer: [],
       _id: uuidv4(),
@@ -30,12 +29,12 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-    setquestion(input)
-    setInput('');
+    setquestion(input);
+    setInput("");
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !isFetching && !e.shiftKey) {
+    if (e.key === "Enter" && !isFetching && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
@@ -44,114 +43,187 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
 
   //save chat question and answer to database
   const saveChat = async (question, answer, uniqueId, user_id, title) => {
-    const data = await saveChatResponse(question, answer, uniqueId, user_id, title);
+    const data = await saveChatResponse(
+      question,
+      answer,
+      uniqueId,
+      user_id,
+      title
+    );
     console.log(data);
-  }
+  };
 
   // Auto-resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       const maxHeight = 150; // Maximum height before scrolling
       const newHeight = Math.min(textareaRef.current.scrollHeight, maxHeight);
       textareaRef.current.style.height = `${newHeight}px`;
 
       // Show scrollbar if content exceeds max height
       if (textareaRef.current.scrollHeight > maxHeight) {
-        textareaRef.current.style.overflowY = 'auto';
+        textareaRef.current.style.overflowY = "auto";
       } else {
-        textareaRef.current.style.overflowY = 'hidden';
+        textareaRef.current.style.overflowY = "hidden";
       }
     }
   }, [input]);
 
-
   useEffect(() => {
     if (question) {
-      setisFetching(true)
+      setisFetching(true);
       setTimeout(() => {
         // Simulate assistant response
-        const response = 'This is a simulated response. The actual integration with an AI model would go here.'
+        const response =
+          "This is a simulated response. The actual integration with an AI model would go here.";
         // setanswer(response)
 
-        saveChat(question, response, params.chatId, localStorage.getItem("userid") || "123", localStorage.getItem("chatTitle") || "New chat")
+        saveChat(
+          question,
+          response,
+          params.chatId,
+          localStorage.getItem("userid") || "123",
+          localStorage.getItem("chatTitle") || "New chat"
+        );
         const assistantMessage = {
           question: null,
           answer: [response],
           _id: uuidv4(),
           createdAt: new Date().toISOString(),
         };
-        setquestion("")
+        setquestion("");
         // setanswer("")
-        setisReady(true)
-        setisFetching(false)
+        setisReady(true);
+        setisFetching(false);
         setMessages((prev) => [...prev, assistantMessage]);
       }, 2000);
     }
-  }, [question])
-
-
+  }, [question]);
   useEffect(() => {
-    setMessages(selectedChat)
-  }, [selectedChat])
+    if (
+      !("webkitSpeechRecognition" in window || "SpeechRecognition" in window)
+    ) {
+      setIsBrowserSupported(false);
+      return;
+    }
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    const recognition = recognitionRef.current;
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        setInput((prev) => (prev + " " + finalTranscript).trim());
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      stopListening();
+    };
+
+    return () => {
+      if (recognition) recognition.stop();
+    };
+  }, []);
+
+  const startListening = () => {
+    try {
+      recognitionRef.current.start();
+      setIsListening(true);
+    } catch (error) {
+      console.error("Error starting speech recognition:", error);
+    }
+  };
+
+  const stopListening = () => {
+    recognitionRef.current.stop();
+    setIsListening(false);
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+  useEffect(() => {
+    setMessages(selectedChat);
+  }, [selectedChat]);
 
   useEffect(() => {
     if (massagesRef.current || isFetching) {
       massagesRef.current.scrollTop = massagesRef.current.scrollHeight;
     }
-  }, [messages, isFetching])
+  }, [messages, isFetching]);
 
   // console.log(selectedChat)
   return (
     <div className="flex flex-col h-full  rounded-t-2xl">
       {/* Messages Container */}
       <div ref={massagesRef} className="flex-1 overflow-y-auto   p-4 space-y-4">
+        {messages &&
+          messages.map((message, ind) => {
+            // Transform question messages (user role)
+            return (
+              <div key={ind} className=" flex flex-col gap-4">
+                {/* Message Item */}
+                {message.question && (
+                  <div className="flex justify-end">
+                    <div className="flex gap-3 max-w-[80%] flex-row-reverse">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                        <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
+                      </div>
+                      <div className="px-4 py-2 w-full bg-blue-600 text-white rounded-br-2xl rounded-l-2xl">
+                        <p className="text-sm">{message.question}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-        {messages && messages.map((message, ind) => {
-          // Transform question messages (user role)       
-          return (
-            <div key={ind} className=' flex flex-col gap-4'>
-              {/* Message Item */}
-              {message.question && <div className="flex justify-end">
-                <div className="flex gap-3 max-w-[80%] flex-row-reverse">
-                  <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                    <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
+                {message.answer && message.answer.length > 0 && (
+                  <div className="flex justify-start">
+                    <div className="flex gap-3 max-w-[80%] flex-row">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                        <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
+                      </div>
+                      <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
+                        <p className="text-sm">{message.answer[0]}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="px-4 py-2 w-full bg-blue-600 text-white rounded-br-2xl rounded-l-2xl">
-                    <p className="text-sm">{message.question}</p>
-                  </div>
-                </div>
-              </div>}
-
-              {message.answer && message.answer.length > 0 && <div className="flex justify-start">
-                <div className="flex gap-3 max-w-[80%] flex-row">
-                  <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                    <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-                  </div>
-                  <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
-                    <p className="text-sm">{message.answer[0]}</p>
-                  </div>
-                </div>
+                )}
               </div>
-              }
-
-            </div>
-          );
-
-        })}
-        {isFetching && <div className="flex justify-start">
-          <div className="flex gap-3 max-w-[80%] flex-row">
-            <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-              <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-            </div>
-            <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
-              <div className=' flex items-center gap-3'>
-                <p className="text-sm">Fetching...</p>
-                <Loader2 className=' animate-spin' />
+            );
+          })}
+        {isFetching && (
+          <div className="flex justify-start">
+            <div className="flex gap-3 max-w-[80%] flex-row">
+              <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
+              </div>
+              <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
+                <div className=" flex items-center gap-3">
+                  <p className="text-sm">Fetching...</p>
+                  <Loader2 className=" animate-spin" />
+                </div>
               </div>
             </div>
           </div>
-        </div>}
+        )}
       </div>
 
       {/* Input Form */}
@@ -167,10 +239,30 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
               rows="1"
               className="w-full py-2 px-3 pr-10 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors placeholder-gray-400 resize-none"
               style={{
-                minHeight: '44px',
-                maxHeight: '150px',
+                minHeight: "44px",
+                maxHeight: "150px",
               }}
             />
+
+            {isBrowserSupported && (
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`absolute right-12 bottom-2 p-1 cursor-pointer transition-colors ${
+                  isListening
+                    ? "text-red-400 hover:text-red-300"
+                    : "text-gray-400 hover:text-blue-100"
+                }`}
+                disabled={!isReady}
+              >
+                {isListening ? (
+                  <MicOff className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
+              </button>
+            )}
+
             <button
               type="submit"
               className="absolute right-4 bottom-2 p-1 text-gray-400 cursor-pointer hover:text-blue-100 transition-colors disabled:opacity-50"
@@ -182,7 +274,6 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
           </div>
         </form>
       </div>
-
     </div>
   );
 };
