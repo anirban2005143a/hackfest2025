@@ -31,7 +31,7 @@ function Dashboard() {
       const response = await axios.post(
         "http://localhost:3000/api/chat/getchathistory",
         {
-          user_id: "67efbb1c8410de7ba2ab3e03",
+          user_id: localStorage.getItem("userid"),
         },
         {
           headers: {
