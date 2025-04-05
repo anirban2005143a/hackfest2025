@@ -7,6 +7,7 @@ import { Bot, Delete, Trash2, User } from "lucide-react";
 import AuthContext from "../../Context/Authcontext.js";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify"
+import defaultUserImg from "/user.png"
 
 function Dashboard() {
 
@@ -198,7 +199,10 @@ function Dashboard() {
         <div className="flex flex-1 flex-col md:flex-row gap-4 p-4 pt-24">
           <div className="w-full md:w-1/3 lg:w-1/4 bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col items-center">
             <div className="bg-gray-700 h-32 w-32 rounded-full mb-4 flex items-center justify-center">
-              <span className="text-4xl">👤</span>
+              <img
+                src={defaultUserImg}
+                alt="User"
+                className="h-32 w-32 rounded-full object-cover"/>
             </div>
             <h2 className="text-xl font-bold text-white text-center">{name}</h2>
             <p className="text-gray-400 text-center mb-4">{email}</p>
