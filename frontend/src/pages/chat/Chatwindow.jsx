@@ -17,7 +17,7 @@ const ChatWindow = ({ isChatInfoFetching, setisChatInfoFetching, setSelectedChat
   const textareaRef = useRef(null);
   const massagesRef = useRef(null);
   const params = useParams()
-
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();

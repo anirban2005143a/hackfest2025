@@ -124,7 +124,7 @@ function Login() {
     try {
       setisLoading(true)
       const response = await axios.post(
-        "http://localhost:3000/api/user/login",
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/login`,
         formData
       );
 
