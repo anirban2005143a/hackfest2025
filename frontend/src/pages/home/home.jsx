@@ -27,10 +27,11 @@ function Home() {
     },
     {
       text: " Intelligence",
-      className: " text-4xl md:text-6xl lg:text-7xl font-bold text-blue-500  mb-8", // Responsive text sizing
+      className: " text-4xl md:text-6xl lg:text-7xl text-blue-500 dark:text-blue-500  mb-8", // Responsive text sizing
     },
     
   ];
+
   //function to show alert
   const showToast = (message, err) => {
     if (err) {
@@ -157,7 +158,6 @@ function Home() {
                   >
                     {/* Financial Intelligence */}
                     <TypewriterEffect words={words}/>
-                    <br />
                     <span className="text-3xl md:text-5xl lg:text-6xl text-gray-100">
                       Powered by AI
                     </span>
