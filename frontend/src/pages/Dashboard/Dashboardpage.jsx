@@ -130,7 +130,7 @@ function Dashboard() {
   }, []);
   useEffect(() => {
     getchatHistory();
-  },[]);
+  }, []);
   return (
     <div className="app dark-theme min-h-screen bg-gray-950 flex flex-col">
       <Navbar isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />
@@ -146,12 +146,12 @@ function Dashboard() {
         {/* chat history */}
         {isMobile ? (
           <>
-            <div className="flex-1 bg-gray-800 rounded-lg shadow-lg p-6">
-              <h1 className="text-2xl font-bold text-white mb-6 text-center">
+            <div className="flex-1 bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+              <h1 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6 text-center">
                 Chat History
               </h1>
 
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {data.map((chat) => (
                   <motion.div
                     key={chat.chatId}
@@ -163,13 +163,15 @@ function Dashboard() {
                     {/* Accordion Header */}
                     <motion.button
                       onClick={() => toggleChat(chat.chatId)}
-                      className="w-full p-4 bg-gray-700 text-white text-left"
-                      whileHover={{ backgroundColor: "#374151" }} // gray-700 on hover
+                      className="w-full p-3 sm:p-4 bg-gray-700 text-white text-left"
+                      whileHover={{ backgroundColor: "#374151" }}
                     >
                       <div className="flex justify-between items-center cursor-pointer">
-                        <span className="font-medium ">{chat.title}</span>
+                        <span className="font-medium text-sm sm:text-base">
+                          {chat.title}
+                        </span>
                         <motion.span
-                          className="text-gray-400"
+                          className="text-gray-400 text-xs sm:text-sm"
                           animate={{
                             rotate: expandedChat === chat.chatId ? 0 : -90,
                           }}
@@ -190,24 +192,24 @@ function Dashboard() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="p-4 space-y-4">
+                          <div className="p-2 sm:p-4 space-y-2 sm:space-y-4">
                             {chat.chatList.map((item, ind) => (
                               <motion.div
                                 key={ind}
-                                className="space-y-3"
+                                className="space-y-2 sm:space-y-3"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: ind * 0.05 }}
                               >
                                 {/* Question */}
                                 <motion.div
-                                  className="bg-blue-900/30 p-4 rounded-lg border-l-4 border-blue-500"
+                                  className="bg-blue-900/30 p-3 sm:p-4 rounded-lg border-l-4 border-blue-500 max-w-full overflow-hidden"
                                   whileHover={{ scale: 1.01 }}
                                 >
-                                  <div className="flex items-start gap-3">
+                                  <div className="flex items-start gap-2 sm:gap-3">
                                     <div className="bg-blue-500 text-white p-1 rounded-full flex-shrink-0">
                                       <svg
-                                        className="w-4 h-4"
+                                        className="w-3 h-3 sm:w-4 sm:h-4"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -220,7 +222,7 @@ function Dashboard() {
                                         />
                                       </svg>
                                     </div>
-                                    <p className="text-white font-medium">
+                                    <p className="text-white font-medium break-words whitespace-pre-wrap text-sm sm:text-base">
                                       {item.question}
                                     </p>
                                   </div>
@@ -228,13 +230,13 @@ function Dashboard() {
 
                                 {/* Answer */}
                                 <motion.div
-                                  className="bg-gray-700/50 p-4 rounded-lg border-l-4 border-green-500 ml-8"
+                                  className="bg-gray-700/50 p-3 sm:p-4 rounded-lg border-l-4 border-green-500 ml-6 sm:ml-8 max-w-full overflow-hidden"
                                   whileHover={{ scale: 1.01 }}
                                 >
-                                  <div className="flex items-start gap-3">
+                                  <div className="flex items-start gap-2 sm:gap-3">
                                     <div className="bg-green-500 text-white p-1 rounded-full flex-shrink-0">
                                       <svg
-                                        className="w-4 h-4"
+                                        className="w-3 h-3 sm:w-4 sm:h-4"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -247,12 +249,12 @@ function Dashboard() {
                                         />
                                       </svg>
                                     </div>
-                                    <div className="text-gray-300">
+                                    <div className="text-gray-300 break-words whitespace-pre-wrap text-sm sm:text-base">
                                       {Array.isArray(item.answer) ? (
                                         item.answer.map((ans, ansIndex) => (
                                           <p
                                             key={ansIndex}
-                                            className="mb-2 last:mb-0"
+                                            className="mb-1 sm:mb-2 last:mb-0"
                                           >
                                             {ans}
                                           </p>
@@ -262,7 +264,7 @@ function Dashboard() {
                                       )}
                                     </div>
                                   </div>
-                                  <p className="text-gray-500 text-xs mt-2">
+                                  <p className="text-gray-500 text-xs mt-1 sm:mt-2">
                                     {getTimeAgo(item.createdAt)}
                                   </p>
                                 </motion.div>
@@ -308,7 +310,7 @@ function Dashboard() {
                         >
                           <div className="flex items-start gap-3">
                             <div className="bg-blue-500 text-white p-1 rounded-full flex-shrink-0">
-                             <Bot/>
+                              <Bot />
                             </div>
                             <p className="text-white font-medium">
                               {item.question}
@@ -322,7 +324,7 @@ function Dashboard() {
                         >
                           <div className="flex items-start gap-3">
                             <div className="bg-green-500 text-white p-1 rounded-full flex-shrink-0">
-                              <User size={20}/>
+                              <User size={20} />
                             </div>
                             <div className="text-gray-300">
                               {Array.isArray(item.answer) ? (

@@ -209,7 +209,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
                     }}
                     className="p-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <MoreVertical size={16} />
+                    <MoreVertical size={16} className='cursor-pointer' />
                   </button>
                   {dropdownOpen === chat.chatId && (
                     <div className="absolute right-0 z-20 mt-1 w-32 bg-gray-800 rounded shadow-lg">
@@ -218,7 +218,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
                           e.stopPropagation();
                           handleRenameChat(chat.chatId, chat.name);
                         }}
-                        className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700"
+                        className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700 cursor-pointer"
                       >
                         Rename
                       </button>
@@ -229,7 +229,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
                             handleDeleteChat(chat.chatId);
                           }
                         }}
-                        className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700 text-red-400"
+                        className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-700 text-red-400 cursor-pointer"
                       >
                         Delete
                       </button>
