@@ -10,8 +10,12 @@ import AuthContext from "./Context/Authcontext.js";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import Feedback from "./pages/Feedback/Feedback.jsx";
+
+
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [errorMessage, seterrorMessage] = useState("")
 
   const verifyAuth = async () => {
     try {
@@ -22,7 +26,7 @@ function App() {
       }
 
       const response = await axios.post(
-        "http://localhost:3000/api/user/profile",
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/profile`,
         {},
         {
           headers: {
@@ -30,30 +34,39 @@ function App() {
           },
         }
       );
+      console.log("Response from verifyAuth", response);
 
       if (response.status === 200) {
         setIsAuthenticated(true);
       } else {
-        throw new Error("Authentication failed");
+        setIsAuthenticated(false);
+        // seterrorMessage(response.data.message || "Authentication failed");
+        // throw new Error("Authentication failed");
       }
     } catch (error) {
-      console.log("Not authenticated", error);
-    } 
+      console.log(error);
+      setIsAuthenticated(false);
+      // if (error.response && error.response.data) seterrorMessage(error.response.data.message )
+      // else seterrorMessage(error.message)
+    }
   };
 
   useEffect(() => {
     verifyAuth();
   }, []);
+
+  
   return (
     <>
       <AuthContext.Provider
         value={{
           isAuthenticated,
           setIsAuthenticated,
+          verifyAuth
         }}
       >
         <BrowserRouter>
-        <ScrollToTop />
+          <ScrollToTop />
           <Routes>
             <Route
               path="/"
@@ -93,6 +106,15 @@ function App() {
               element={
                 <PrivateRoute>
                   <DashboardPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/feedback"
+              element={
+                <PrivateRoute>
+                  <Navbar />
+                  <Feedback />
                 </PrivateRoute>
               }
             />
