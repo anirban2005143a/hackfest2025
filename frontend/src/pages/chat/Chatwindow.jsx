@@ -8,19 +8,22 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
   const [messages, setMessages] = useState(selectedChat || []);
   const [input, setInput] = useState('');
   const [question, setquestion] = useState("")
-  const [answer, setanswer] = useState("")
+  // const [answer, setanswer] = useState("")
+
+  const [isReady, setisReady] = useState(false)
+
   const textareaRef = useRef(null);
+  const massagesRef = useRef(null);
   const params = useParams()
 
-  const massagesRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-
+    setisReady(false)
     const newMessage = {
-      question : input,
-      answer : [],
+      question: input,
+      answer: [],
       _id: uuidv4(),
       createdAt: new Date().toISOString(),
     };
@@ -28,18 +31,6 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
     setMessages((prev) => [...prev, newMessage]);
     setquestion(input)
     setInput('');
-
-    // Simulate assistant response
-    setTimeout(() => {
-      const assistantMessage = {
-        question : null,
-        answer : ['This is a simulated response. The actual integration with an AI model would go here.'],
-        _id: uuidv4(),
-        createdAt: new Date().toISOString(),
-      };
-      setanswer(assistantMessage.answer[0])
-      setMessages((prev) => [...prev, assistantMessage]);
-    }, 1000);
   };
 
   const handleKeyDown = (e) => {
@@ -74,60 +65,82 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
   }, [input]);
 
   //save question and answer to database when answer is received
+  // useEffect(() => {
+  //   if (answer) {
+
+  //     setquestion("")
+  //     setanswer("")
+  //   }
+  // }, [answer])
+
   useEffect(() => {
-    if (answer) {
-      saveChat(question, answer, params.chatId, localStorage.getItem("userid") || "123", localStorage.getItem("chatTitle") || "New chat")
-      setanswer("")
+    if (question) {
+      // Simulate assistant response
+      const response = 'This is a simulated response. The actual integration with an AI model would go here.'
+      // setanswer(response)
+      
+      saveChat(question, response, params.chatId, localStorage.getItem("userid") || "123", localStorage.getItem("chatTitle") || "New chat")
+      const assistantMessage = {
+        question: null,
+        answer: [response],
+        _id: uuidv4(),
+        createdAt: new Date().toISOString(),
+      };
+      setquestion("")
+      // setanswer("")
+      setMessages((prev) => [...prev, assistantMessage]);
+
     }
-  }, [answer])
+  }, [question])
+
 
   useEffect(() => {
     setMessages(selectedChat)
   }, [selectedChat])
 
   useEffect(() => {
-    if(massagesRef.current) {
+    if (massagesRef.current) {
       massagesRef.current.scrollTop = massagesRef.current.scrollHeight;
     }
   }, [messages])
-  
+
 
   // console.log(messages)
   return (
     <div className="flex flex-col h-full">
       {/* Messages Container */}
       <div ref={massagesRef} className="flex-1 overflow-y-auto   p-4 space-y-4">
-       
-        {messages.map((message , ind) => {
-          // Transform question messages (user role)       
-            return (
-              <div key={ind} className=' flex flex-col gap-4'>
-                {/* Message Item */}
-                {message.question && <div className="flex justify-end">
-                  <div className="flex gap-3 max-w-[80%] flex-row-reverse">
-                    <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                      <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
-                    </div>
-                    <div className="px-4 py-2 w-full bg-blue-600 text-white rounded-br-2xl rounded-l-2xl">
-                      <p className="text-sm">{message.question}</p>
-                    </div>
-                  </div>
-                </div>}
 
-                {message.answer && message.answer.length > 0 && <div className="flex justify-start">
-                   <div className="flex gap-3 max-w-[80%] flex-row">
-                     <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                       <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-                     </div>
-                     <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
-                       <p className="text-sm">{message.answer[0]}</p>
-                     </div>
-                   </div>
-                 </div>
-                }
+        {messages && messages.map((message, ind) => {
+          // Transform question messages (user role)       
+          return (
+            <div key={ind} className=' flex flex-col gap-4'>
+              {/* Message Item */}
+              {message.question && <div className="flex justify-end">
+                <div className="flex gap-3 max-w-[80%] flex-row-reverse">
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                    <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
+                  </div>
+                  <div className="px-4 py-2 w-full bg-blue-600 text-white rounded-br-2xl rounded-l-2xl">
+                    <p className="text-sm">{message.question}</p>
+                  </div>
+                </div>
+              </div>}
+
+              {message.answer && message.answer.length > 0 && <div className="flex justify-start">
+                <div className="flex gap-3 max-w-[80%] flex-row">
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                    <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
+                  </div>
+                  <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
+                    <p className="text-sm">{message.answer[0]}</p>
+                  </div>
+                </div>
               </div>
-            );
-          
+              }
+            </div>
+          );
+
 
         })}
       </div>
@@ -152,7 +165,7 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
             <button
               type="submit"
               className="absolute right-4 bottom-2 p-1 text-gray-400 hover:text-blue-400 transition-colors disabled:opacity-50"
-              disabled={!input.trim()}
+              disabled={!isReady || !input.trim()}
             >
               <Send className="w-5 h-5" />
             </button>
