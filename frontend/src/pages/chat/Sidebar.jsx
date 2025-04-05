@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, MoreVertical, Trash } from 'lucide-react';
+import { Plus, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { ToastContainer, toast } from 'react-toastify';
@@ -22,8 +22,6 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
   useEffect(() => {
     if (allChats.length > 0 && !selectedChatId) {
       setSelectedChatId(allChats[0].chatId);
-      console.log(allChats[0].chatId);
-      // setselectedChat(allChats[allChats.length - 1].chatList);
       localStorage.setItem("chatTitle", allChats[0].title);
       navigate(`/chat/${allChats[0].chatId}`);
     }
@@ -49,25 +47,21 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
 
   const saveChat = (name) => {
     if (!name) {
-      // alert('Chat name cannot be empty');
-      showToast("Chat name cannot be empty", 1)
+      showToast("Chat name cannot be empty", 1);
       return;
     }
 
-    // Check for duplicate names
     if (name !== "New chat" && allChats.some(chat => chat.title.toLowerCase() === name.toLowerCase())) {
-      // alert('A chat with this name already exists');
-      showToast("A chat with this name already exists", 1)
+      showToast("A chat with this name already exists", 1);
       return;
     }
 
     const newChat = {
       title: name,
-      chatId: uuidv4(), // Unique ID as string
+      chatId: uuidv4(),
       createdAt: new Date().toISOString(),
     };
 
-    // Add new chat to the top of the list
     setallChats((prev) => [newChat, ...prev]);
     setSelectedChatId(newChat.chatId);
     // setselectedChat([]);
@@ -79,14 +73,11 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
 
   const handleDeleteChat = async (id) => {
     if (!id) {
-      // alert("Chat ID is required to delete a chat");
-      showToast("Chat ID is required to delete a chat", 1)
+      alert("Chat ID is required to delete a chat");
       return;
-    };
-
+    }
+    
     try {
-      console.log(id);
-
       const response = await axios.post(
         "http://localhost:3000/api/chat/deletechathistory",
         {
@@ -99,17 +90,11 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
           },
         }
       );
-      // console.log(response)
-      // alert(response?.data?.message);
-      showToast(response?.data?.message, 0)
-      !response.data.error && handelDeletechatFromArray(id)
+      showToast(response?.data?.message, 0);
+      handelDeletechatFromArray(id);
     } catch (error) {
-      console.log(error)
-      showToast(error.response?.data?.message || error.message, 1)
+      showToast(error.response?.data?.message || error.message, 1);
     }
-
-    // getChatHistory(localStorage.getItem("userid"));
-
   };
 
   const handleChatClick = (chatId, chatList, title) => {
@@ -119,20 +104,16 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
     localStorage.setItem("chatTitle", title);
   };
 
-  // Sort chats by creation date (newest first)
   const sortedChats = [...allChats].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
 
-  //chat history
   const ChatHistory = async () => {
-    // console.log("dfbshfb")
     try {
       setisReady(false);
       const data = await getChatHistory(localStorage.getItem("userid"));
-      // console.log(data);
       if (!data.error) {
-        if (data.chat.length > 0)
+        if (data.chat.length > 0) {
           setSelectedChatId(data.chat[data.chat.length - 1].chatId);
         if (data.chat.length > 0)
           // setselectedChat(data.chat[data.chat.length - 1].chatList);
@@ -140,19 +121,15 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
         setallChats(data.chat);
         if (data.chat.length === 0) saveChat("New chat");
       } else {
-        console.log(data)
-        showToast(data.message, 1)
+        showToast(data.message, 1);
       }
-    } catch (error) {
-      console.log(error)
-      if (error.response && error.response.data) showToast(error.response.data.message, 1)
-      else showToast(error.message, 1)
+    } }catch (error) {
+      showToast(error.response?.data?.message || error.message, 1);
     } finally {
       setisReady(true);
     }
   };
 
-  //function to show alert
   const showToast = (message, err) => {
     if (err) {
       toast.error(message, {
@@ -179,15 +156,15 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
     }
   };
 
-  //delete the particular chat fromt eh all chat array
   const handelDeletechatFromArray = (id) => {
-    setallChats((prev) => prev.filter((chat) => chat.chatId != id))
-  }
+    setallChats((prev) => prev.filter((chat) => chat.chatId != id));
+  };
 
   useEffect(() => {
-    navigate(`/chat/${selectedChatId}`);
-  }, [selectedChatId])
-
+    if (selectedChatId) {
+      navigate(`/chat/${selectedChatId}`);
+    }
+  }, [selectedChatId]);
 
   useEffect(() => {
     ChatHistory();
@@ -202,30 +179,30 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
         <div
           id="sidebar"
           className={`
-        z-10
-        fixed sm:relative h-full bg-slate-900 overflow-x-hidden rounded-tr-2xl
-        transition-all duration-300 ease-in-out
-        ${isNavOpen ? "left-0" : "-left-full sm:left-0"}
-      `}
+            z-10
+            fixed sm:relative h-full bg-slate-900 overflow-x-hidden rounded-tr-2xl
+            transition-all duration-300 ease-in-out
+            ${isNavOpen ? "left-0" : "-left-full sm:left-0"}
+          `}
           style={{
-            width:
-              window.innerWidth >= 640 ? (isNavOpen ? "400px" : "0%") : "80%",
+            width: window.innerWidth >= 640 ? (isNavOpen ? "400px" : "0%") : "80%",
           }}
         >
           <div
             className={`
-          p-4 flex flex-col overflow-x-hidden overflow-y-auto h-full
-          transition-opacity duration-300
-          ${isNavOpen ? "opacity-100" : "opacity-0 sm:opacity-100"}
-        `}
+              p-4 flex flex-col overflow-x-hidden overflow-y-auto h-full
+              transition-opacity duration-300
+              ${isNavOpen ? "opacity-100" : "opacity-0 sm:opacity-100"}
+            `}
           >
             <div className="flex justify-between items-center">
               <h2 className="text-md font-semibold text-white">Your chat</h2>
               <button
                 onClick={handleAddClick}
                 disabled={isAddingNew}
-                className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${isAddingNew ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${
+                  isAddingNew ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 <Plus size={18} />
               </button>
@@ -245,37 +222,36 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
                     />
                   </li>
                 )}
-                {sortedChats.map((chat, ind) => {
-                  // console.log(chat)
-                  return (
-                    <li
-                      key={ind}
-                      className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${selectedChatId === chat.chatId ? "bg-gray-700" : ""
-                        }`}
-                      onClick={() =>
-                        handleChatClick(chat.chatId, chat.chatList, chat.title)
-                      }
+                {sortedChats.map((chat, ind) => (
+                  <li
+                    key={ind}
+                    className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${
+                      selectedChatId === chat.chatId ? "bg-gray-700" : ""
+                    }`}
+                    onClick={() =>
+                      handleChatClick(chat.chatId, chat.chatList, chat.title)
+                    }
+                  >
+                    <span
+                      className={`flex-1 truncate px-2 py-1 ${
+                        selectedChatId === chat.chatId ? "font-medium" : ""
+                      }`}
                     >
-                      <span
-                        className={`flex-1 truncate px-2 py-1 ${selectedChatId === chat.chatId ? "font-medium" : ""
-                          }`}
+                      {chat.title}
+                    </span>
+                    <div className="relative" ref={dropdownRef}>
+                      <button
+                        className="p-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        onClick={(e) => {
+                          handleDeleteChat(chat.chatId);
+                          e.stopPropagation();
+                        }}
                       >
-                        {chat.title}
-                      </span>
-                      <div className="relative" ref={dropdownRef}>
-                        <button className="p-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                          <Trash
-                            size={16}
-                            onClick={(e) => {
-                              handleDeleteChat(chat.chatId);
-                              e.stopPropagation(); // Prevent triggering the parent click event
-                            }}
-                          />
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
+                        <Trash size={16} />
+                      </button>
+                    </div>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
