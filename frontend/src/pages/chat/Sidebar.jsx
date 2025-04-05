@@ -79,7 +79,7 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
     
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/chat/deletechathistory",
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/deletechathistory`,
         {
           chatId: id,
         },

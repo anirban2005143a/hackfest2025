@@ -92,7 +92,7 @@ function Signup() {
     try {
       setisLoading(true)
       console.log("Form is valid, submitting...");
-      const response = await axios.post("http://localhost:3000/api/user/register", {
+      const response = await axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/api/user/register`, {
         fullname: {
           firstname: formData.firstName,
           lastname: formData.lastName

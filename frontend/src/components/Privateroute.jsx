@@ -17,7 +17,7 @@ function PrivateRoute({ children }) {
       }
 
       const response = await axios.post(
-        "http://localhost:3000/api/user/profile",
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/profile`,
         {},
         {
           headers: {

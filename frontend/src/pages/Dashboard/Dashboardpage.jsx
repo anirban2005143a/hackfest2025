@@ -44,7 +44,7 @@ function Dashboard() {
     try {
       console.log("chat history");
       const response = await axios.post(
-        "http://localhost:3000/api/chat/getchathistory",
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/getchathistory`,
         {
           user_id: localStorage.getItem("userid"),
         },
@@ -70,7 +70,7 @@ function Dashboard() {
     console.log(chatId);
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/chat/deletechathistory",
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/deletechathistory`,
         {
           chatId: chatId,
         },
@@ -115,7 +115,7 @@ function Dashboard() {
     try {
       const userid = localStorage.getItem("userid");
       const response = await axios.post(
-        "http://localhost:3000/api/user/info",
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/info`,
         {
           userid: userid,
         },
