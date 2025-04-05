@@ -7,11 +7,11 @@ import { getChatHistory } from './functions/getChatHistory';
 import Loader from '../../components/loader/Loader';
 import axios from 'axios';
 
-const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
+const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selectedChatId }) => {
   const [allChats, setallChats] = useState([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  // const [selectedChatId, setSelectedChatId] = useState(null);
   const [isReady, setisReady] = useState(false);
 
   const inputRef = useRef(null);
@@ -64,7 +64,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
 
     setallChats((prev) => [newChat, ...prev]);
     setSelectedChatId(newChat.chatId);
-    setselectedChat([]);
+    // setselectedChat([]);
     localStorage.setItem("chatTitle", newChat.title);
     navigate(`/chat/${newChat.chatId}`);
     setIsAddingNew(false);
@@ -99,7 +99,8 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
 
   const handleChatClick = (chatId, chatList, title) => {
     setSelectedChatId(chatId);
-    setselectedChat(chatList || []);
+    setisChatInfoFetching(true)
+    // setselectedChat(chatList || []);
     localStorage.setItem("chatTitle", title);
   };
 
@@ -114,14 +115,15 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
       if (!data.error) {
         if (data.chat.length > 0) {
           setSelectedChatId(data.chat[data.chat.length - 1].chatId);
-          setselectedChat(data.chat[data.chat.length - 1].chatList);
-        }
+        if (data.chat.length > 0)
+          // setselectedChat(data.chat[data.chat.length - 1].chatList);
+
         setallChats(data.chat);
         if (data.chat.length === 0) saveChat("New chat");
       } else {
         showToast(data.message, 1);
       }
-    } catch (error) {
+    } }catch (error) {
       showToast(error.response?.data?.message || error.message, 1);
     } finally {
       setisReady(true);
@@ -168,6 +170,7 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     ChatHistory();
   }, []);
 
+  // console.log(allChats)
   return (
     <>
       <ToastContainer />

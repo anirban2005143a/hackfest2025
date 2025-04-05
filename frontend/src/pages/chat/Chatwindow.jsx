@@ -1,27 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Send, Bot, User, Loader2, MicOff, Mic } from "lucide-react";
+import { Send, Bot, User, Loader2 , MicOff, Mic } from "lucide-react";
 import { saveChatResponse } from "./functions/saveChat";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from "react-router-dom";
+import { getChatInfo } from "./functions/getChatInfo";
 
-const ChatWindow = ({ selectedChat, setselectedChat }) => {
-  const [messages, setMessages] = useState(selectedChat || []);
+const ChatWindow = ({
+  isChatInfoFetching,
+  setisChatInfoFetching,
+  setSelectedChatId,
+  selectedChatId,
+}) => {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [question, setquestion] = useState("");
   const [isFetching, setisFetching] = useState(false);
-  const [isBrowserSupported, setIsBrowserSupported] = useState(true);
+
   const [isReady, setisReady] = useState(true);
-  const recognitionRef = useRef(null);
+
   const textareaRef = useRef(null);
   const massagesRef = useRef(null);
   const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const [isBrowserSupported, setIsBrowserSupported] = useState(true);
+
   const params = useParams();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
     setisReady(false);
-    const newMessage = {  
+    const newMessage = {
       question: input,
       answer: [],
       _id: uuidv4(),
@@ -51,6 +60,14 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
       title
     );
     console.log(data);
+  };
+
+  //function to get chat question-answer
+  const getChatQueAns = async (chatId) => {
+    const chats = await getChatInfo(chatId);
+    setMessages(chats);
+    setisChatInfoFetching(false);
+    console.log(chats);
   };
 
   // Auto-resize textarea based on content
@@ -100,6 +117,18 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
       }, 2000);
     }
   }, [question]);
+
+  useEffect(() => {
+    if (massagesRef.current || isFetching) {
+      massagesRef.current.scrollTop = massagesRef.current.scrollHeight;
+    }
+  }, [messages, isFetching]);
+
+  useEffect(() => {
+    selectedChatId && getChatQueAns(selectedChatId);
+  }, [selectedChatId]);
+
+  // adding voice recognition
   useEffect(() => {
     if (
       !("webkitSpeechRecognition" in window || "SpeechRecognition" in window)
@@ -160,22 +189,19 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
       startListening();
     }
   };
-  useEffect(() => {
-    setMessages(selectedChat);
-  }, [selectedChat]);
-
-  useEffect(() => {
-    if (massagesRef.current || isFetching) {
-      massagesRef.current.scrollTop = massagesRef.current.scrollHeight;
-    }
-  }, [messages, isFetching]);
-
   // console.log(selectedChat)
   return (
     <div className="flex flex-col h-full  rounded-t-2xl">
       {/* Messages Container */}
       <div ref={massagesRef} className="flex-1 overflow-y-auto   p-4 space-y-4">
-        {messages &&
+        {isChatInfoFetching && (
+          <div className=" h-full w-full flex justify-center items-center  ">
+            <Loader2 size={50} color="blue" className=" animate-spin" />
+          </div>
+        )}
+
+        {!isChatInfoFetching &&
+          messages &&
           messages.map((message, ind) => {
             // Transform question messages (user role)
             return (
@@ -209,7 +235,7 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
               </div>
             );
           })}
-        {isFetching && (
+        {!isChatInfoFetching && isFetching && (
           <div className="flex justify-start">
             <div className="flex gap-3 max-w-[80%] flex-row">
               <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
@@ -243,7 +269,6 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
                 maxHeight: "150px",
               }}
             />
-
             {isBrowserSupported && (
               <button
                 type="button"
@@ -262,7 +287,6 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
                 )}
               </button>
             )}
-
             <button
               type="submit"
               className="absolute right-4 bottom-2 p-1 text-gray-400 cursor-pointer hover:text-blue-100 transition-colors disabled:opacity-50"

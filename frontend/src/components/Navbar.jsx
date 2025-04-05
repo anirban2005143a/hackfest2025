@@ -1,7 +1,7 @@
 
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import logoImg from '/vite.svg';
+import logoImg from '/icon.png';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogIn, LogOut, Settings, PanelLeftOpen, PanelLeftClose, User } from 'lucide-react';
@@ -154,7 +154,7 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
 
   return (
     <motion.nav
-      className="fixed w-full z-10 h-[60px] "
+      className="fixed w-full z-10  "
       initial={{ y: 0 }}
       animate={{ y: isVisible ? 0 : "-100%" }}
       transition={{ duration: 0.4, ease: "easeInOut" }}
@@ -162,14 +162,14 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
       <div className=" container mx-auto px-4 max-w-7xl ">
         {/* Desktop Navbar */}
         <div className="max-w-7xl md:block hidden mx-auto ">
-          <div className="flex justify-between h-16 items-center">
+          <div className="flex justify-between h-[75px] items-center">
             <div className="flex gap-4 items-center">
               <Link to="/">
                 <span
                   className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-900"
                     }`}
                 >
-                  AI
+                  <img src={logoImg} alt="logo image" className=' w-15 h-15' />
                 </span>
               </Link>
               {window.location.pathname.includes("/chat") && (
@@ -179,7 +179,7 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
                   }}
                   className=" cursor-pointer  text-white px-4 py-2 rounded-lg shadow-lg"
                 >
-                  {isNavOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
+                  {isNavOpen ? <PanelLeftClose size={30} /> : <PanelLeftOpen size={30} />}
                 </button>
               )}
             </div>
