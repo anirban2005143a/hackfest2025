@@ -54,7 +54,7 @@ function Login() {
         setIsAuthenticated(true);
         localStorage.setItem("token", response.data.token);
         alert(response.data.message);
-        localStorage.setItem("userid", response.data.user._id);
+        localStorage.setItem("userid", response.data.userid);
         navigate("/");
       }
       // Handle successful login (e.g., redirect to dashboard)

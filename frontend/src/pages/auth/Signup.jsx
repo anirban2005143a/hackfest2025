@@ -87,7 +87,7 @@ function Signup() {
       if(response?.data?.token){
         setIsAuthenticated(true);
         localStorage.setItem("token", response?.data?.token);
-        localStorage.setItem("userid", response?.data?.user?._id);
+        localStorage.setItem("userid", response?.data?.userid);
         navigate("/");
       }
     } catch (error) {
