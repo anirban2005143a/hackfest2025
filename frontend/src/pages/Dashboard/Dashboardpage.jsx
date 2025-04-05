@@ -3,6 +3,7 @@ import Navbar from "../../components/Navbar.jsx";
 import axios from "axios";
 import Loader from "../../components/loader/Loader.jsx";
 import { motion, AnimatePresence } from "framer-motion";
+import { Bot, Delete, Trash2, User } from "lucide-react";
 function Dashboard() {
   const [isNavOpen, setIsNavOpen] = React.useState(true);
   const [data, setData] = useState([]);
@@ -19,13 +20,12 @@ function Dashboard() {
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
   const [expandedChat, setExpandedChat] = useState(null);
-
   const toggleChat = (chatId) => {
     setExpandedChat(expandedChat === chatId ? null : chatId);
   };
   const getchatHistory = async () => {
     setLoading(true);
-    console.log("get chat history");
+    // console.log("get chat history");
     try {
       console.log("chat history");
       const response = await axios.post(
@@ -51,6 +51,30 @@ function Dashboard() {
     }
   };
 
+  const deletechat = async (chatId) => {
+    console.log("check changed");
+    console.log(chatId);
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/chat/deletechathistory",
+        {
+          chatId: chatId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log(response?.data?.message);
+      alert(response?.data?.message);
+      getchatHistory();
+    } catch (error) {
+      console.log("error in deleting chat history");
+      console.log(error);
+    }
+  };
+
   function getTimeAgo(timestamp) {
     const now = new Date();
     const past = new Date(timestamp);
@@ -70,10 +94,43 @@ function Dashboard() {
       return "just now";
     }
   }
-  
+  const [name, setName] = useState("----");
+  const [email, setEmail] = useState("----");
+  const userinfo = async () => {
+    try {
+      const userid = localStorage.getItem("userid");
+      const response = await axios.post(
+        "http://localhost:3000/api/user/info",
+        {
+          userid: userid,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      // console.log(response);
+      if (response.status === 200) {
+        setName(
+          response.data.user.fullname.firstname +
+            " " +
+            response.data.user.fullname.lastname
+        );
+        setEmail(response.data.user.email);
+      }
+      console.log(response.data.name);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    console.log("user info");
+    userinfo();
+  }, []);
   useEffect(() => {
     getchatHistory();
-  }, []);
+  },[]);
   return (
     <div className="app dark-theme min-h-screen bg-gray-950 flex flex-col">
       <Navbar isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />
@@ -83,19 +140,8 @@ function Dashboard() {
           <div className="bg-gray-700 h-32 w-32 rounded-full mb-4 flex items-center justify-center">
             <span className="text-4xl">👤</span>
           </div>
-          <h2 className="text-xl font-bold text-white text-center">
-            User Name
-          </h2>
-          <p className="text-gray-400 text-center mb-4">user@example.com</p>
-
-          <div className="w-full mt-4 space-y-2">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition cursor-pointer">
-              Edit Profile
-            </button>
-            <button className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded transition">
-              Settings
-            </button>
-          </div>
+          <h2 className="text-xl font-bold text-white text-center">{name}</h2>
+          <p className="text-gray-400 text-center mb-4">{email}</p>
         </div>
         {/* chat history */}
         {isMobile ? (
@@ -244,7 +290,7 @@ function Dashboard() {
                     animate={{ opacity: 2 }}
                     className="text-gray-400 text-center py-10"
                   >
-                    Select a chat from the sidebar to view history
+                    Select a chat from the sidebar to preview your history here
                   </motion.div>
                 ) : (
                   <div className="space-y-4">
@@ -262,19 +308,7 @@ function Dashboard() {
                         >
                           <div className="flex items-start gap-3">
                             <div className="bg-blue-500 text-white p-1 rounded-full flex-shrink-0">
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                              </svg>
+                             <Bot/>
                             </div>
                             <p className="text-white font-medium">
                               {item.question}
@@ -288,19 +322,7 @@ function Dashboard() {
                         >
                           <div className="flex items-start gap-3">
                             <div className="bg-green-500 text-white p-1 rounded-full flex-shrink-0">
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                              </svg>
+                              <User size={20}/>
                             </div>
                             <div className="text-gray-300">
                               {Array.isArray(item.answer) ? (
@@ -331,25 +353,44 @@ function Dashboard() {
         <div className="w-full md:w-1/4 bg-gray-800 rounded-lg shadow-lg p-6 hidden md:block">
           <h2 className="text-lg font-bold text-white mb-4">Recent Activity</h2>
           <div className="space-y-4">
-            {data.map((item, ind) => (
-              <button
-                key={item}
-                className="border-l-2 border-blue-500 pl-4 cursor-pointer"
-                onClick={() => {
-                  setClick(ind);
-                  console.log("clicked", ind);
-                }}
-              >
-                <div className="space-x-4 cursor-pointer">
-                  <div className="flex items-center gap-5">
-                    <p className="text-white text-sm w-1xl ">{item.title}</p>
-                    <p className="text-gray-400 text-xs">
-                      {getTimeAgo(item.createdAt)}
-                    </p>
+            <div className="space-y-4">
+              {data.map((item, index) => {
+                // console.log(item); // This will now work
+                return (
+                  <div
+                    key={item.id || index}
+                    className="group relative border-l-2 border-blue-500 pl-4 hover:bg-gray-800/50 transition-colors rounded cursor-pointer"
+                  >
+                    <button
+                      className="w-full text-left"
+                      onClick={() => {
+                        setClick(index);
+                        console.log("clicked", index);
+                      }}
+                    >
+                      <div className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-5">
+                          <p className="text-white text-sm">{item.title}</p>
+                          <p className="text-gray-400 text-xs">
+                            {getTimeAgo(item.createdAt)}
+                          </p>
+                        </div>
+                        <button
+                          className="text-gray-400 hover:text-red-400 p-2 -mr-2 transition-colors cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log("delete", index);
+                            deletechat(item.chatId);
+                          }}
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    </button>
                   </div>
-                </div>
-              </button>
-            ))}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
