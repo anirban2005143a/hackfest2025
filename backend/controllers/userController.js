@@ -85,7 +85,9 @@ module.exports.loginUser = async (req, res, next) => {
 
 module.exports.getUserProfile = async (req, res, next) => {
   res.status(200).json({
-    message: "True",
+    error: false,
+    islogin : true , 
+    message:"True"
   });
 };
 

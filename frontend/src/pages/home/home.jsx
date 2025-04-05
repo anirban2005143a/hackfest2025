@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import FeatureCard from './FeatureCard';
 import Loader from '../../components/loader/Loader';
+import { toast, ToastContainer } from "react-toastify"
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,6 +15,33 @@ function Home() {
     const sectionRefs = useRef([]);
 
     const [isloading, setisloading] = useState(false)
+
+    //function to show alert
+    const showToast = (message, err) => {
+        if (err) {
+            toast.error(message, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+            });
+        } else {
+            toast.success(message, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+            });
+        }
+    }
 
     useEffect(() => {
         gsap.fromTo(titleRef.current, {
@@ -65,10 +93,12 @@ function Home() {
             });
         });
     }, []);
+    
 
     return (
         <>
-           {!isloading && <div className="min-h-screen bg-gray-950 text-white">
+            <ToastContainer />
+            {!isloading && <div className="min-h-screen bg-gray-950 text-white">
                 {/* Hero Section */}
                 <div className="relative overflow-hidden min-h-screen flex items-center">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8   ">
@@ -156,7 +186,7 @@ function Home() {
                     </div>
                 </div>
             </div>}
-           {isloading && <Loader />}
+            {isloading && <Loader />}
         </>
     );
 }

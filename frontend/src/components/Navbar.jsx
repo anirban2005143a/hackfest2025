@@ -1,175 +1,12 @@
-// import React, { useEffect, useState, useRef } from "react";
-// import { Link, useNavigate } from "react-router-dom";
-// import DropdownMenu from "./Dropdown.jsx";
-// import { useContext } from "react";
-// import { User } from "lucide-react";
-// import AuthContext from "../Context/Authcontext.js";
-// const Navbar = (props) => {
 
-//   const [isOpen, setIsOpen] = useState(false);
-//   const UserdropdownRef = useRef(null);
-//   const navigate = useNavigate();
-//   const toggleUserDropdown = () => {
-//     setIsOpen(!isOpen);
-//   };
-
-//   const { isAuthenticated } = useContext(AuthContext);
-
-//   return (
-//     <>
-//       <nav
-//         id="navbar"
-//         className="fixed top-0 left-0 w-full z-50 border-gray-200 "
-//       >
-//         <div className="w-full flex items-center justify-between p-4">
-//           <Link to="/" className=" cursor-pointer flex items-center ">
-//             <img
-//               src="https://media.gettyimages.com/id/1129909544/vector/html-editor-glitch-effect-vector-icon-illustration.jpg?s=612x612&w=0&k=20&c=2_TWVXKmiYAFtneK9cYUvmmi1GlAe37Og0wYw8vVLMU="
-//               className="h-8"
-//               alt="Flowbite Logo"
-//             />
-//             <span className="self-center sm:block hidden text-2xl font-semibold whitespace-nowrap dark:text-white">
-//               AI
-//             </span>
-//           </Link>
-
-//           <div
-//             className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
-//             id="navbar-user"
-//           >
-//             <ul className="flex z-50 relative flex-col font-medium p-4 md:p-0 mt-4 border md:bg-transparent bg-stone-900 border-gray-100 rounded-lg md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0  ">
-//               <li>
-//                 <Link
-//                   to="/"
-//                   className={`block py-2 px-3 ${
-//                     window.location.pathname === "/"
-//                       ? " dark:text-blue-500 text-blue-700 "
-//                       : " text-white "
-//                   } rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 cursor-pointer`}
-//                 >
-//                   Home
-//                 </Link>
-//               </li>
-//               <li>
-//                 <Link
-//                   to="/about"
-//                   className={`block py-2 px-3 ${
-//                     window.location.pathname === "/about"
-//                       ? " dark:text-blue-500 text-blue-700 "
-//                       : " text-white "
-//                   } rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 cursor-pointer`}
-//                 >
-//                   About
-//                 </Link>
-//               </li>
-//               <li>
-//                 <Link
-//                   to="/editor"
-//                   className={`block py-2 px-3 ${
-//                     window.location.pathname === "/editor"
-//                       ? " dark:text-blue-500 text-blue-700 "
-//                       : " text-white "
-//                   } rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 cursor-pointer`}
-//                 >
-//                   Editor
-//                 </Link>
-//               </li>
-//             </ul>
-//           </div>
-
-//           {/* user profile  */}
-//           {/* from this part it is not reflecting in the ui like the user image in whcihc click two option appears sign in and signup */}
-//           <div className="relative md:order-2 px-5">
-//             <button
-//               onClick={toggleUserDropdown}
-//               className=" text-slate-200 px-4 py-2 rounded-lg cursor-pointer transition-colors "
-//             >
-//               <User />
-//             </button>
-
-//             {isOpen && (
-//               <div
-//                 ref={UserdropdownRef}
-//                 className="absolute -translate-x-8 mt-2 px-2 w-[120px] bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50"
-//               >
-//                 <ul className="py-2">
-//                   {isAuthenticated ||
-//                   localStorage.getItem("islogin") === "true" ? (
-//                     <>
-//                       <li>
-//                         <Link
-//                           to="/dashboard"
-//                           onClick={() => setIsOpen(false)}
-//                           className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
-//                         >
-//                           Profile
-//                         </Link>
-//                       </li>
-//                       <li>
-//                         <Link
-//                           to="/"
-//                           onClick={() => {
-//                             localStorage.clear();
-//                             window.location.reload();
-//                             setIsOpen(false);
-//                             // Consider adding: window.location.reload() or context logout
-//                           }}
-//                           className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
-//                         >
-//                           Logout
-//                         </Link>
-//                       </li>
-//                     </>
-//                   ) : (
-//                     <>
-//                       <li>
-//                         <Link
-//                           to="/auth/login"
-//                           onClick={() => setIsOpen(false)}
-//                           className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
-//                         >
-//                           Sign In
-//                         </Link>
-//                       </li>
-//                       <li>
-//                         <Link
-//                           to="/auth/signup"
-//                           onClick={() => setIsOpen(false)}
-//                           className="block rounded-sm px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors"
-//                         >
-//                           Sign Up
-//                         </Link>
-//                       </li>
-//                     </>
-//                   )}
-//                 </ul>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-//       </nav>
-
-//     </>
-//   );
-// };
-
-// export default Navbar;
-
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import logoImg from "/vite.svg";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  LogIn,
-  LogOut,
-  Settings,
-  PanelLeftOpen,
-  PanelLeftClose,
-  User,
-} from "lucide-react";
-import defaultUserImg from "/user.png";
-import AuthContext from "../Context/Authcontext";
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import logoImg from '/vite.svg';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { LogIn, LogOut, Settings, PanelLeftOpen, PanelLeftClose, User } from 'lucide-react';
+import defaultUserImg from "/user.png"
+import AuthContext from '../Context/Authcontext';
 
 const Navbar = ({ setIsNavOpen, isNavOpen }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -236,63 +73,48 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
         </div>
       </button>
 
-      {isDropdownOpen && (
-        <div
-          ref={dropdownRef}
-          className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-700"
-        >
-          {isAuthenticated ? (
-            <>
-              <div
-                ref={profileRef}
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  navigate("/dashboard");
-                }}
-                className="px-4 py-2 cursor-pointer text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Profile</span>
-              </div>
-              <button
-                ref={logoutRef}
-                onClick={() => {
-                  handleLogout();
-                }}
-                className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 flex items-center space-x-2"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                ref={loginRef}
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  navigate("/auth/login");
-                }}
-                className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Login</span>
-              </button>
-              <button
-                ref={loginRef}
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  navigate("/auth/signup");
-                }}
-                className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Sign Up</span>
-              </button>
-            </>
-          )}
-        </div>
-      )}
+        {isDropdownOpen && (
+            <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-700">
+                {isAuthenticated ? (
+                    <>
+                        <div 
+                            ref={profileRef}
+                            onClick={() => {
+                                setIsDropdownOpen(false);
+                                navigate("/dashboard");
+                            }}
+                            className="px-4 py-2 cursor-pointer text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span>Dashboard</span>
+                        </div>
+                        <button
+                            ref={logoutRef}
+                            onClick={() => {
+                                handleLogout();
+                                navigate("/")
+                            }}
+                            className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 flex items-center space-x-2"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
+                        </button>
+                    </>
+                ) : (
+                    <button
+                        ref={loginRef}
+                        onClick={() => {
+                            setIsDropdownOpen(false);
+                            navigate("/auth/login");
+                        }}
+                        className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
+                    >
+                        <LogIn className="w-4 h-4" />
+                        <span>Login</span>
+                    </button>
+                )}
+            </div>
+        )}
     </div>
   );
 
@@ -374,15 +196,8 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
               >
                 About
               </Link>
-              <Link
-                to="/feeback"
-                className={`font-medium ${
-                  darkMode
-                    ? "text-gray-300 hover:text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Contact
+              <Link to="/feedback" className={`font-medium ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
+                Feedback
               </Link>
               <UserDropdown />
             </div>
@@ -482,50 +297,12 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
                 />
               </svg>
             </button>
-            <div className=" flex flex-col items-start gap-10  pt-[20px] text-white">
-              {isAuthenticated ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile"
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    to="/#"
-                    className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile"
-                  >
-                    About
-                  </Link>
-                  <Link
-                    to="/#"
-                    className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile"
-                  >
-                    Feedback
-                  </Link>
-                  <Link
-                    to="/#"
-                    className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile"
-                  >
-                    Log out
-                  </Link>{" "}
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/auth/login"
-                    className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile"
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    to="/auth/signup"
-                    className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile"
-                  >
-                    Sign in 
-                  </Link>
-                </>
-              )}
+            <div className=' flex flex-col items-start gap-10  pt-[20px] text-white'>
+              <Link to={`/chat/${localStorage.getItem("userid") || "123"}`} className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Ask AI</Link>
+              <Link to='/about' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">About</Link>
+              {isAuthenticated && <Link to='/dashboard' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Feedback</Link>}
+              {isAuthenticated && <Link to='/' onClick={handleLogout} className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log out</Link>}
+              { !isAuthenticated && <Link to='/auth/login' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log in</Link>}
             </div>
           </div>
         </div>
