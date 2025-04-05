@@ -1,237 +1,237 @@
-from flask import Flask, request, jsonify
-from huggingface_hub import login
-import openmeteo_requests
-import torch
-import json
-import re
-from datasets import load_dataset
-import requests
-from datetime import datetime
-import requests_cache
-import pandas as pd
-import copy
-from retry_requests import retry
-from tqdm.notebook import tqdm
-import time
-import numpy as np
-from typing import List, Dict, Tuple, Optional, Literal, Union, Callable, Any
-from dataclasses import dataclass
-from enum import Enum
-from tavily import TavilyClient
-from transformers import T5Tokenizer, T5ForSequenceClassification, T5ForConditionalGeneration, PreTrainedTokenizer, PreTrainedModel, AutoTokenizer, AutoModelForSeq2SeqLM, AutoConfig, AutoModel, AutoModelForCausalLM, BitsAndBytesConfig
+# from flask import Flask, request, jsonify
+# from huggingface_hub import login
+# import openmeteo_requests
+# import torch
+# import json
+# import re
+# from datasets import load_dataset
+# import requests
+# from datetime import datetime
+# import requests_cache
+# import pandas as pd
+# import copy
+# from retry_requests import retry
+# from tqdm.notebook import tqdm
+# import time
+# import numpy as np
+# from typing import List, Dict, Tuple, Optional, Literal, Union, Callable, Any
+# from dataclasses import dataclass
+# from enum import Enum
+# from tavily import TavilyClient
+# from transformers import T5Tokenizer, T5ForSequenceClassification, T5ForConditionalGeneration, PreTrainedTokenizer, PreTrainedModel, AutoTokenizer, AutoModelForSeq2SeqLM, AutoConfig, AutoModel, AutoModelForCausalLM, BitsAndBytesConfig
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
-# Initialize device
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# # Initialize device
+# device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# Authentication (replace with your token)
-login(token='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')
+# # Authentication (replace with your token)
+# login(token='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')
 
-# Model and tokenizer initialization
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.float16,
-    bnb_4bit_use_double_quant=True
-)
+# # Model and tokenizer initialization
+# bnb_config = BitsAndBytesConfig(
+#     load_in_4bit=True,
+#     bnb_4bit_quant_type="nf4",
+#     bnb_4bit_compute_dtype=torch.float16,
+#     bnb_4bit_use_double_quant=True
+# )
 
-llmagent = AutoModelForCausalLM.from_pretrained(
-    "mistralai/Mistral-7B-Instruct-v0.3",
-    device_map="auto",
-    trust_remote_code=True,
-    use_auth_token=True,
-    quantization_config=bnb_config
-).to(device)
+# llmagent = AutoModelForCausalLM.from_pretrained(
+#     "mistralai/Mistral-7B-Instruct-v0.3",
+#     device_map="auto",
+#     trust_remote_code=True,
+#     use_auth_token=True,
+#     quantization_config=bnb_config
+# ).to(device)
 
-llmtokenizer = AutoTokenizer.from_pretrained(
-    "mistralai/Mistral-7B-Instruct-v0.3", 
-    use_auth_token=True
-)
+# llmtokenizer = AutoTokenizer.from_pretrained(
+#     "mistralai/Mistral-7B-Instruct-v0.3", 
+#     use_auth_token=True
+# )
 
-# Helper classes and functions
-class Tool:
-    def __init__(self, name: str, description: str, func: Callable):
-        self.name = name
-        self.description = description
-        self.func = func
+# # Helper classes and functions
+# class Tool:
+#     def __init__(self, name: str, description: str, func: Callable):
+#         self.name = name
+#         self.description = description
+#         self.func = func
 
-    def __call__(self, **kwargs) -> Any:
-        return self.func(**kwargs)
+#     def __call__(self, **kwargs) -> Any:
+#         return self.func(**kwargs)
 
-class ToolRegistry:
-    def __init__(self):
-        self.tools: Dict[str, Tool] = {}
+# class ToolRegistry:
+#     def __init__(self):
+#         self.tools: Dict[str, Tool] = {}
     
-    def register(self, tool: Tool):
-        self.tools[tool.name] = tool
+#     def register(self, tool: Tool):
+#         self.tools[tool.name] = tool
     
-    def get_tool(self, name: str) -> Tool:
-        return self.tools.get(name)
+#     def get_tool(self, name: str) -> Tool:
+#         return self.tools.get(name)
     
-    def get_tool_descriptions(self) -> str:
-        descriptions = []
-        for name, tool in self.tools.items():
-            descriptions.append(f"Tool: {name}\nDescription: {tool.description}")
+#     def get_tool_descriptions(self) -> str:
+#         descriptions = []
+#         for name, tool in self.tools.items():
+#             descriptions.append(f"Tool: {name}\nDescription: {tool.description}")
 
-        if len(descriptions)==0:
-            descriptions.append("No Tools Available")
-        return "\n\n".join(descriptions)
+#         if len(descriptions)==0:
+#             descriptions.append("No Tools Available")
+#         return "\n\n".join(descriptions)
 
-def prompt_template(description : str) -> str:
-    return f"""You are a helpful AI assistant that can use tools. Available tools:
+# def prompt_template(description : str) -> str:
+#     return f"""You are a helpful AI assistant that can use tools. Available tools:
 
-{description}
+# {description}
 
-To use a tool, output in this format:
-{{
-    "name": "tool_name",
-    "arguments": {{
-        "arg1": "value1",
-        "arg2": "value2"
-    }}
-}}
+# To use a tool, output in this format:
+# {{
+#     "name": "tool_name",
+#     "arguments": {{
+#         "arg1": "value1",
+#         "arg2": "value2"
+#     }}
+# }}
 
-Respond to the user's request, using tools whenever necessary. You are not allowed to make nested tool calls. You can only make tool calls in a sequential manner. After Answering the Question stop."""
+# Respond to the user's request, using tools whenever necessary. You are not allowed to make nested tool calls. You can only make tool calls in a sequential manner. After Answering the Question stop."""
 
-def generate_until_pattern(model, tokenizer, initial_prompt, pattern, max_length=2048):
-    eos_token_id = tokenizer.eos_token_id
-    input_ids = tokenizer.encode(initial_prompt, return_tensors='pt')
+# def generate_until_pattern(model, tokenizer, initial_prompt, pattern, max_length=2048):
+#     eos_token_id = tokenizer.eos_token_id
+#     input_ids = tokenizer.encode(initial_prompt, return_tensors='pt')
     
-    output_tokens = copy.deepcopy(input_ids).to(device)
-    attention_mask = torch.ones_like(input_ids)
-    past_key_values = None
-    generated_text = ""
-    current_length = input_ids.shape[1]
+#     output_tokens = copy.deepcopy(input_ids).to(device)
+#     attention_mask = torch.ones_like(input_ids)
+#     past_key_values = None
+#     generated_text = ""
+#     current_length = input_ids.shape[1]
     
-    while current_length < max_length:
-        with torch.no_grad():
-            outputs = model(
-                input_ids=input_ids.to(device), 
-                attention_mask=attention_mask.to(device),
-                past_key_values=past_key_values
-            )
+#     while current_length < max_length:
+#         with torch.no_grad():
+#             outputs = model(
+#                 input_ids=input_ids.to(device), 
+#                 attention_mask=attention_mask.to(device),
+#                 past_key_values=past_key_values
+#             )
             
-            logits = outputs.logits
-            past_key_values = outputs.past_key_values
-            next_token_logits = logits[0, -1, :]
-            next_token_id = torch.argmax(next_token_logits).unsqueeze(0).unsqueeze(0)
-            output_tokens = torch.cat([output_tokens, next_token_id], dim = -1)
+#             logits = outputs.logits
+#             past_key_values = outputs.past_key_values
+#             next_token_logits = logits[0, -1, :]
+#             next_token_id = torch.argmax(next_token_logits).unsqueeze(0).unsqueeze(0)
+#             output_tokens = torch.cat([output_tokens, next_token_id], dim = -1)
             
-            if next_token_id.item() == eos_token_id:
-                return tokenizer.decode(output_tokens[0], skip_special_tokens = True), False, None
+#             if next_token_id.item() == eos_token_id:
+#                 return tokenizer.decode(output_tokens[0], skip_special_tokens = True), False, None
             
-            next_token_text = tokenizer.decode(
-                next_token_id[0],
-                skip_special_tokens=True
-            )
-            generated_text += next_token_text
-            for match in re.finditer(pattern, generated_text, re.DOTALL):
-                return tokenizer.decode(output_tokens[0], skip_special_tokens = True), True, (match.start(), match.end())
+#             next_token_text = tokenizer.decode(
+#                 next_token_id[0],
+#                 skip_special_tokens=True
+#             )
+#             generated_text += next_token_text
+#             for match in re.finditer(pattern, generated_text, re.DOTALL):
+#                 return tokenizer.decode(output_tokens[0], skip_special_tokens = True), True, (match.start(), match.end())
             
-            input_ids = next_token_id
-            attention_mask = torch.ones_like(input_ids)
-            current_length += 1
-    return tokenizer.decode(output_tokens[0], skip_special_tokens = True), False, None
+#             input_ids = next_token_id
+#             attention_mask = torch.ones_like(input_ids)
+#             current_length += 1
+#     return tokenizer.decode(output_tokens[0], skip_special_tokens = True), False, None
 
-class LLMToolCaller:
-    def __init__(self, model, tokenizer, tool_registry: ToolRegistry):
-        self.tokenizer = tokenizer
-        self.model = model
-        self.tool_registry = tool_registry
+# class LLMToolCaller:
+#     def __init__(self, model, tokenizer, tool_registry: ToolRegistry):
+#         self.tokenizer = tokenizer
+#         self.model = model
+#         self.tool_registry = tool_registry
 
-    def _extract_tool_calls(self, text: str) -> List[Dict]:
-        tool_pattern = r'\{\s*"name"\s*:\s*"(.*?)"\s*,\s*"arguments"\s*:\s*\{(.*?)\}\s*\}'
-        tool_calls = []
-        for match in re.finditer(tool_pattern, text, re.DOTALL):
-            tool_calls.append(json.loads(match.group()))
-        return tool_calls
+#     def _extract_tool_calls(self, text: str) -> List[Dict]:
+#         tool_pattern = r'\{\s*"name"\s*:\s*"(.*?)"\s*,\s*"arguments"\s*:\s*\{(.*?)\}\s*\}'
+#         tool_calls = []
+#         for match in re.finditer(tool_pattern, text, re.DOTALL):
+#             tool_calls.append(json.loads(match.group()))
+#         return tool_calls
 
-    def _execute_tool_calls(self, tool_calls: List[Dict]) -> List[Dict]:
-        results = []
-        for call in tool_calls:
-            tool_name = call.get("name")
-            arguments = call.get("arguments", {})
-            tool = self.tool_registry.get_tool(tool_name)
-            if tool:
-                try:
-                    result = tool() if not arguments else tool(**arguments)
-                    results.append({
-                        "tool": tool_name,
-                        "status": "success",
-                        "result": result
-                    })
-                except Exception as e:
-                    results.append({
-                        "tool": tool_name,
-                        "status": "error",
-                        "error": repr(e)
-                    })
-            else:
-                results.append({
-                    "tool": tool_name,
-                    "status": "error",
-                    "error": "Tool not found"
-                })
-        return results
+#     def _execute_tool_calls(self, tool_calls: List[Dict]) -> List[Dict]:
+#         results = []
+#         for call in tool_calls:
+#             tool_name = call.get("name")
+#             arguments = call.get("arguments", {})
+#             tool = self.tool_registry.get_tool(tool_name)
+#             if tool:
+#                 try:
+#                     result = tool() if not arguments else tool(**arguments)
+#                     results.append({
+#                         "tool": tool_name,
+#                         "status": "success",
+#                         "result": result
+#                     })
+#                 except Exception as e:
+#                     results.append({
+#                         "tool": tool_name,
+#                         "status": "error",
+#                         "error": repr(e)
+#                     })
+#             else:
+#                 results.append({
+#                     "tool": tool_name,
+#                     "status": "error",
+#                     "error": "Tool not found"
+#                 })
+#         return results
 
-    def generate_response(self, prompt: str, max_new_tokens: int = 2048) -> str:
-        system_prompt = prompt_template(self.tool_registry.get_tool_descriptions())
-        full_prompt = f"{system_prompt}\n\nUser: {prompt}\n\nAssistant:"
-        flag = True
-        while(flag):
-            inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.model.device)
-            response, flag, po = generate_until_pattern(self.model, self.tokenizer, full_prompt,
-                                r'\{\s*"name"\s*:\s*"(.*?)"\s*,\s*"arguments"\s*:\s*\{(.*?)\}\s*\}')
-            response = response[len(full_prompt):].strip()
-            tool_calls = self._extract_tool_calls(response)
-            if tool_calls:
-                results = self._execute_tool_calls(tool_calls)
-                full_prompt = f"{full_prompt}\n{response}\n\nTool Results:\n{json.dumps(results, indent=2)}"
-        tool_results_prompt = f"{full_prompt}\n\nFinal Response: "
-        inputs = self.tokenizer(tool_results_prompt, return_tensors="pt").to(self.model.device)
-        outputs = self.model.generate(
-            **inputs,
-            max_new_tokens = max_new_tokens,
-            pad_token_id = self.tokenizer.eos_token_id,
-            do_sample = False
-        )
-        final_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return final_response[len(tool_results_prompt):].strip()
+#     def generate_response(self, prompt: str, max_new_tokens: int = 2048) -> str:
+#         system_prompt = prompt_template(self.tool_registry.get_tool_descriptions())
+#         full_prompt = f"{system_prompt}\n\nUser: {prompt}\n\nAssistant:"
+#         flag = True
+#         while(flag):
+#             inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.model.device)
+#             response, flag, po = generate_until_pattern(self.model, self.tokenizer, full_prompt,
+#                                 r'\{\s*"name"\s*:\s*"(.*?)"\s*,\s*"arguments"\s*:\s*\{(.*?)\}\s*\}')
+#             response = response[len(full_prompt):].strip()
+#             tool_calls = self._extract_tool_calls(response)
+#             if tool_calls:
+#                 results = self._execute_tool_calls(tool_calls)
+#                 full_prompt = f"{full_prompt}\n{response}\n\nTool Results:\n{json.dumps(results, indent=2)}"
+#         tool_results_prompt = f"{full_prompt}\n\nFinal Response: "
+#         inputs = self.tokenizer(tool_results_prompt, return_tensors="pt").to(self.model.device)
+#         outputs = self.model.generate(
+#             **inputs,
+#             max_new_tokens = max_new_tokens,
+#             pad_token_id = self.tokenizer.eos_token_id,
+#             do_sample = False
+#         )
+#         final_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+#         return final_response[len(tool_results_prompt):].strip()
 
-# Initialize the tool registry and tool caller
-registry = ToolRegistry()
-tool_caller = LLMToolCaller(llmagent, llmtokenizer, registry)
+# # Initialize the tool registry and tool caller
+# registry = ToolRegistry()
+# tool_caller = LLMToolCaller(llmagent, llmtokenizer, registry)
 
-# Flask routes
-@app.route('/predict', methods=['POST'])
-def predict():
-    """Endpoint to get predictions from the AI model"""
-    try:
-        data = request.get_json()
-        if not data or 'text' not in data:
-            return jsonify({"error": "No text provided"}), 400
+# # Flask routes
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     """Endpoint to get predictions from the AI model"""
+#     try:
+#         data = request.get_json()
+#         if not data or 'text' not in data:
+#             return jsonify({"error": "No text provided"}), 400
         
-        query = data['text']
+#         query = data['text']
         
-        with torch.no_grad():
-            response = tool_caller.generate_response(query)
+#         with torch.no_grad():
+#             response = tool_caller.generate_response(query)
         
-        return jsonify({
-            "response": response,
-            "status": "success"
-        })
+#         return jsonify({
+#             "response": response,
+#             "status": "success"
+#         })
     
-    except Exception as e:
-        return jsonify({
-            "error": str(e),
-            "status": "error"
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             "error": str(e),
+#             "status": "error"
+#         }), 500
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    return jsonify({"status": "healthy"})
+# @app.route('/health', methods=['GET'])
+# def health_check():
+#     """Health check endpoint"""
+#     return jsonify({"status": "healthy"})
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, debug=True)
