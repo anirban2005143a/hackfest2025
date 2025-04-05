@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Plus, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-
+import { ToastContainer, toast } from 'react-toastify';
 import { getChatHistory } from './functions/getChatHistory';
 import Loader from '../../components/loader/Loader';
 
@@ -67,13 +67,15 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
 
 
     if (!name) {
-      alert('Chat name cannot be empty');
+      // alert('Chat name cannot be empty');
+      showToast("Chat name cannot be empty", 1)
       return;
     }
 
     // Check for duplicate names
     if (name !== "New chat" && allChats.some(chat => chat.title.toLowerCase() === name.toLowerCase())) {
-      alert('A chat with this name already exists');
+      // alert('A chat with this name already exists');
+      showToast("A chat with this name already exists", 1)
       return;
     }
 
@@ -142,11 +144,12 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
         if (data.chat.length === 0) saveChat("New chat")
       } else {
         console.log(data)
-        showToast(data.message, true)
+        showToast(data.message, 1)
       }
     } catch (error) {
       console.log(error)
-      showToast(error.message, true)
+      if (error.response && error.response.data) showToast(error.response.data.message, 1)
+      else showToast(error.message, 1)
     } finally {
       setisReady(true)
     }
@@ -183,9 +186,10 @@ const Sidebar = ({ isNavOpen, setIsNavOpen, setselectedChat }) => {
     ChatHistory()
   }, [])
 
-  console.log(allChats)
+  // console.log(allChats)
   return (
     <>
+      <ToastContainer />
       {!isReady && <Loader />}
       {isReady && <div
         id="sidebar"

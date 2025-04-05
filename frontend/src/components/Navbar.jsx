@@ -73,48 +73,48 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
         </div>
       </button>
 
-        {isDropdownOpen && (
-            <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-700">
-                {isAuthenticated ? (
-                    <>
-                        <div 
-                            ref={profileRef}
-                            onClick={() => {
-                                setIsDropdownOpen(false);
-                                navigate("/dashboard");
-                            }}
-                            className="px-4 py-2 cursor-pointer text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
-                        >
-                            <Settings className="w-4 h-4" />
-                            <span>Dashboard</span>
-                        </div>
-                        <button
-                            ref={logoutRef}
-                            onClick={() => {
-                                handleLogout();
-                                navigate("/")
-                            }}
-                            className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 flex items-center space-x-2"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            <span>Logout</span>
-                        </button>
-                    </>
-                ) : (
-                    <button
-                        ref={loginRef}
-                        onClick={() => {
-                            setIsDropdownOpen(false);
-                            navigate("/auth/login");
-                        }}
-                        className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
-                    >
-                        <LogIn className="w-4 h-4" />
-                        <span>Login</span>
-                    </button>
-                )}
-            </div>
-        )}
+      {isDropdownOpen && (
+        <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-700">
+          {isAuthenticated ? (
+            <>
+              <div
+                ref={profileRef}
+                onClick={() => {
+                  setIsDropdownOpen(false);
+                  navigate("/dashboard");
+                }}
+                className="px-4 py-2 cursor-pointer text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Dashboard</span>
+              </div>
+              <button
+                ref={logoutRef}
+                onClick={() => {
+                  handleLogout();
+                  navigate("/")
+                }}
+                className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 flex items-center space-x-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            <button
+              ref={loginRef}
+              onClick={() => {
+                setIsDropdownOpen(false);
+                navigate("/auth/login");
+              }}
+              className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Login</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -166,9 +166,8 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
             <div className="flex gap-4 items-center">
               <Link to="/">
                 <span
-                  className={`text-xl font-bold ${
-                    darkMode ? "text-white" : "text-gray-900"
-                  }`}
+                  className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-900"
+                    }`}
                 >
                   AI
                 </span>
@@ -186,13 +185,15 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
             </div>
 
             <div className="hidden md:flex items-center space-x-8">
+              <Link to="/chat/ai" className={`font-medium ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
+                Ask AI
+              </Link>
               <Link
                 to="/about"
-                className={`font-medium ${
-                  darkMode
+                className={`font-medium ${darkMode
                     ? "text-gray-300 hover:text-white"
                     : "text-gray-600 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 About
               </Link>
@@ -271,9 +272,8 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
         {/* Mobile Menu */}
         <div
           ref={menuRef}
-          className={`${
-            isMenuOpen ? "" : "hidden "
-          } md:hidden fixed top-0 right-0 h-screen w-screen  bg-[#00000084] backdrop-blur-sm shadow-lg `}
+          className={`${isMenuOpen ? "" : "hidden "
+            } md:hidden fixed top-0 right-0 h-screen w-screen  bg-[#00000084] backdrop-blur-sm shadow-lg `}
         >
           <div className="px-10 pt-[50px] h-full">
             <button
@@ -302,7 +302,7 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
               <Link to='/about' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">About</Link>
               {isAuthenticated && <Link to='/dashboard' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Feedback</Link>}
               {isAuthenticated && <Link to='/' onClick={handleLogout} className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log out</Link>}
-              { !isAuthenticated && <Link to='/auth/login' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log in</Link>}
+              {!isAuthenticated && <Link to='/auth/login' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log in</Link>}
             </div>
           </div>
         </div>

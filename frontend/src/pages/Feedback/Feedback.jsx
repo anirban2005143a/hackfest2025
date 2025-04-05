@@ -3,13 +3,15 @@ import { MessageSquare, ThumbsUp, ThumbsDown, Bug, Lightbulb, Send } from 'lucid
 import AuthContext from '../../Context/Authcontext';
 import Loader from '../../components/loader/Loader';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from "react-toastify"
 
 function Feedback() {
+
   const [feedbackType, setFeedbackType] = useState('');
   const [feedback, setFeedback] = useState('');
   const [email, setEmail] = useState('');
 
-  const { isAuthenticated } = useContext(AuthContext)
+  const { isAuthenticated, setIsAuthenticated, verifyAuth } = useContext(AuthContext);
 
   const navigate = useNavigate()
 
@@ -32,16 +34,23 @@ function Feedback() {
   ];
 
   useEffect(() => {
-    if(isAuthenticated === false){
+    if (isAuthenticated === false) {
       navigate("/auth/login")
     }
   }, [isAuthenticated])
-  
+
+  useEffect(() => {
+    if (isAuthenticated === null) {
+      verifyAuth()
+    }
+  }, [isAuthenticated])
+
 
   return (
     <>
-      {isAuthenticated===null && <Loader/>}
-      <div id='feedback' className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6 md:p-8   ">
+      <ToastContainer />
+      {!isAuthenticated && <Loader />}
+      {isAuthenticated && <div id='feedback' className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6 md:p-8   ">
         <div className="max-w-2xl mx-auto mt-[60px]">
           <h1 className="text-3xl font-bold text-gray-100 mb-8">Share Your Feedback</h1>
 
@@ -108,7 +117,7 @@ function Feedback() {
             Thank you for helping us improve our product
           </div>
         </div>
-      </div>
+      </div>}
     </>
   );
 }

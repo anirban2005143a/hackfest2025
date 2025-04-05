@@ -3,6 +3,8 @@ import { Send, Bot, User } from 'lucide-react';
 import { saveChatResponse } from './functions/saveChat';
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router-dom';
+import { getChatHistory } from './functions/getChatHistory';
+import { ToastContainer , toast } from 'react-toastify';
 
 const ChatWindow = ({ selectedChat, setselectedChat }) => {
   const [messages, setMessages] = useState(selectedChat || []);
@@ -63,15 +65,7 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
       }
     }
   }, [input]);
-
-  //save question and answer to database when answer is received
-  // useEffect(() => {
-  //   if (answer) {
-
-  //     setquestion("")
-  //     setanswer("")
-  //   }
-  // }, [answer])
+ 
 
   useEffect(() => {
     if (question) {
@@ -104,8 +98,7 @@ const ChatWindow = ({ selectedChat, setselectedChat }) => {
     }
   }, [messages])
 
-
-  // console.log(messages)
+  // console.log(selectedChat)
   return (
     <div className="flex flex-col h-full">
       {/* Messages Container */}

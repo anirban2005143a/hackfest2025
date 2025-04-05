@@ -66,8 +66,7 @@ function Home() {
 
     return (
         <>
-            <ToastContainer />
-            {!isloading && <div className="min-h-screen bg-gray-950 text-white">
+            <div className="min-h-screen bg-gray-950 text-white">
                 {/* Hero Section */}
                 <div className="relative overflow-hidden min-h-screen flex items-center">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8   ">
@@ -154,7 +153,7 @@ function Home() {
                         </div>
                     </div>
                 </div>
-            </div>}
+            </div> 
           
         </>
     );
