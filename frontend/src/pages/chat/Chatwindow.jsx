@@ -4,6 +4,8 @@ import { saveChatResponse } from "./functions/saveChat";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from "react-router-dom";
 import { getChatInfo } from "./functions/getChatInfo";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const ChatWindow = ({
   isChatInfoFetching,
@@ -71,11 +73,26 @@ const ChatWindow = ({
   };
 
   const getanswer = async (question) => {
-    const response = await axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/getanswer`, {
-      query: question
-    });
-    console.log(response);
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/getanswer`, {
+        query: question
+      },{
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      console.log(response);
+      alert(response.data.answer);
+    } catch (error) {
+      console.error("Error fetching answer:", error);
+      alert(error.response.data.message);
+    }
   }
+
+  useEffect(() => {
+    getanswer(question);
+  })
 
   // Auto-resize textarea based on content
   useEffect(() => {

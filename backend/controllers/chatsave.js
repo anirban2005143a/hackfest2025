@@ -164,7 +164,7 @@ const chatinfo = async (req, res) => {
   return res.status(200).json({ error: false, chat });
 };
 
-const getanswer = async (res, res) => {
+const getanswer = async (req, res) => {
   try {
     const { query } = req.body;
 
@@ -172,7 +172,7 @@ const getanswer = async (res, res) => {
     const response = await axios.post(`${process.env.FLASK_API_URL}/api/query`, {
       query: query
     });
-
+    
     return res.json({ error: false, data: response.data, message: "Response from AI service" });
   } catch (error) {
     console.error(error);
