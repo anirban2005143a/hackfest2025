@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Send, Bot, User, Loader2 , MicOff, Mic } from "lucide-react";
+import { Send, Bot, User, Loader2, MicOff, Mic } from "lucide-react";
 import { saveChatResponse } from "./functions/saveChat";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from "react-router-dom";
@@ -69,6 +69,13 @@ const ChatWindow = ({
     setisChatInfoFetching(false);
     console.log(chats);
   };
+
+  const getanswer = async (question) => {
+    const response = await axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/getanswer`, {
+      query: question
+    });
+    console.log(response);
+  }
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -273,11 +280,10 @@ const ChatWindow = ({
               <button
                 type="button"
                 onClick={toggleListening}
-                className={`absolute right-12 bottom-2 p-1 cursor-pointer transition-colors ${
-                  isListening
-                    ? "text-red-400 hover:text-red-300"
-                    : "text-gray-400 hover:text-blue-100"
-                }`}
+                className={`absolute right-12 bottom-2 p-1 cursor-pointer transition-colors ${isListening
+                  ? "text-red-400 hover:text-red-300"
+                  : "text-gray-400 hover:text-blue-100"
+                  }`}
                 disabled={!isReady}
               >
                 {isListening ? (
