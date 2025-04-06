@@ -1,18 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Trash } from 'lucide-react';
+import { Loader2, Plus, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { ToastContainer, toast } from 'react-toastify';
 import { getChatHistory } from './functions/getChatHistory';
 import Loader from '../../components/loader/Loader';
 import axios from 'axios';
+import { saveChatResponse } from './functions/saveChat';
 
-const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selectedChatId }) => {
-  const [allChats, setallChats] = useState([]);
+const Sidebar = ({ isNavOpen, setchatCount, setisChatInfoFetching, setSelectedChatId, selectedChatId }) => {
+  const [allChats, setallChats] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [inputValue, setInputValue] = useState("");
   // const [selectedChatId, setSelectedChatId] = useState(null);
   const [isReady, setisReady] = useState(false);
+  const [isChatDeleting, setisChatDeleting] = useState(false)
 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -20,12 +22,13 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
 
   // Set initial selected chat (most recent one)
   useEffect(() => {
-    if (allChats.length > 0 && !selectedChatId) {
+    if (allChats && allChats.length > 0 && !selectedChatId) {
       setSelectedChatId(allChats[0].chatId);
       localStorage.setItem("chatTitle", allChats[0].title);
       navigate(`/chat/${allChats[0].chatId}`);
     }
-  }, [allChats.length, selectedChatId]);
+    allChats && setchatCount(allChats.length)
+  }, [allChats, selectedChatId]);
 
   // Focus input when adding new chat
   useEffect(() => {
@@ -45,30 +48,40 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
     }
   };
 
-  const saveChat = (name) => {
-    if (!name) {
-      showToast("Chat name cannot be empty", 1);
-      return;
+  const saveChat = async (name) => {
+    try {
+      setisChatInfoFetching(true)
+      if (!name) {
+        showToast("Chat name cannot be empty", 1);
+        setisChatInfoFetching(false)
+        return;
+      }
+
+      if (name !== "New chat" && allChats && allChats.some(chat => chat.title.toLowerCase() === name.toLowerCase())) {
+        showToast("A chat with this name already exists", 1);
+        setisChatInfoFetching(false)
+        return;
+      }
+
+      const newChat = {
+        title: name,
+        chatId: uuidv4(),
+        createdAt: new Date().toISOString(),
+      };
+
+      allChats ? setallChats((prev) => [newChat, ...prev]) : setallChats([newChat]) ;
+      setSelectedChatId(newChat.chatId);
+      localStorage.setItem("chatTitle", newChat.title);
+      navigate(`/chat/${newChat.chatId}`);
+
+      //set states to default
+      setIsAddingNew(false);
+      setInputValue("");
+      showToast("Chat created successfully", 0);
+    } catch (error) {
+      console.log(error)
+      showToast(error.response?.data?.message || error.message, 1);
     }
-
-    if (name !== "New chat" && allChats.some(chat => chat.title.toLowerCase() === name.toLowerCase())) {
-      showToast("A chat with this name already exists", 1);
-      return;
-    }
-
-    const newChat = {
-      title: name,
-      chatId: uuidv4(),
-      createdAt: new Date().toISOString(),
-    };
-
-    setallChats((prev) => [newChat, ...prev]);
-    setSelectedChatId(newChat.chatId);
-    // setselectedChat([]);
-    localStorage.setItem("chatTitle", newChat.title);
-    navigate(`/chat/${newChat.chatId}`);
-    setIsAddingNew(false);
-    setInputValue("");
   };
 
   const handleDeleteChat = async (id) => {
@@ -76,7 +89,7 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
       alert("Chat ID is required to delete a chat");
       return;
     }
-    
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/deletechathistory`,
@@ -104,9 +117,10 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
     localStorage.setItem("chatTitle", title);
   };
 
-  const sortedChats = [...allChats].sort(
+  let sortedChats = []
+  allChats ? sortedChats = [...allChats].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
+  ) : ""
 
   const ChatHistory = async () => {
     try {
@@ -115,15 +129,16 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
       if (!data.error) {
         if (data.chat.length > 0) {
           setSelectedChatId(data.chat[data.chat.length - 1].chatId);
-        if (data.chat.length > 0)
-          // setselectedChat(data.chat[data.chat.length - 1].chatList);
+          if (data.chat.length > 0)
+            // setselectedChat(data.chat[data.chat.length - 1].chatList);
 
-        setallChats(data.chat);
-        if (data.chat.length === 0) saveChat("New chat");
-      } else {
-        showToast(data.message, 1);
+            setallChats(data.chat || []);
+          if (data.chat.length === 0) saveChat("New chat");
+        } else {
+          showToast(data.message, 1);
+        }
       }
-    } }catch (error) {
+    } catch (error) {
       showToast(error.response?.data?.message || error.message, 1);
     } finally {
       setisReady(true);
@@ -200,9 +215,8 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
               <button
                 onClick={handleAddClick}
                 disabled={isAddingNew}
-                className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${
-                  isAddingNew ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`px-2 py-1.5 bg-slate-800 text-white rounded hover:bg-slate-800/80 cursor-pointer ${isAddingNew ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 <Plus size={18} />
               </button>
@@ -225,22 +239,20 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
                 {sortedChats.map((chat, ind) => (
                   <li
                     key={ind}
-                    className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${
-                      selectedChatId === chat.chatId ? "bg-gray-700" : ""
-                    }`}
+                    className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${selectedChatId === chat.chatId ? "bg-gray-700" : ""
+                      }`}
                     onClick={() =>
                       handleChatClick(chat.chatId, chat.chatList, chat.title)
                     }
                   >
                     <span
-                      className={`flex-1 truncate px-2 py-1 ${
-                        selectedChatId === chat.chatId ? "font-medium" : ""
-                      }`}
+                      className={`flex-1 truncate px-2 py-1 ${selectedChatId === chat.chatId ? "font-medium" : ""
+                        }`}
                     >
                       {chat.title}
                     </span>
                     <div className="relative" ref={dropdownRef}>
-                      <button
+                      {!isChatDeleting && <button
                         className="p-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         onClick={(e) => {
                           handleDeleteChat(chat.chatId);
@@ -248,7 +260,8 @@ const Sidebar = ({ isNavOpen, setisChatInfoFetching, setSelectedChatId , selecte
                         }}
                       >
                         <Trash size={16} />
-                      </button>
+                      </button>}
+                      {isChatDeleting && <Loader2 className=' animate-spin' />}
                     </div>
                   </li>
                 ))}

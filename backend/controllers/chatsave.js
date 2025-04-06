@@ -10,7 +10,7 @@ const savingresponse = async (req, res) => {
     console.log("aaaya");
     const { question, answer, uniqueId, user_id, title } = req.body;
     console.log(req.body);
-    if (!question || !answer || !uniqueId || !user_id) {
+    if ( !answer || !uniqueId || !user_id) {
       return res
         .status(400)
         .json({ error: true, message: "All fields are required" });
