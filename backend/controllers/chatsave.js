@@ -164,7 +164,7 @@ const chatinfo = async (req, res) => {
   return res.status(200).json({ error: false, chat });
 };
 
-const getanswer = async (res, res) => {
+const getanswer = async (req, res) => {
   try {
     const { query } = req.body;
 
