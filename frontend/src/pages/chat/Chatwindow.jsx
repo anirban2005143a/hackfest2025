@@ -18,6 +18,7 @@ const ChatWindow = ({
   const [input, setInput] = useState("");
   const [question, setquestion] = useState("");
   const [isFetching, setisFetching] = useState(false);
+  const [answer, setanswer] = useState("");
 
   const [isReady, setisReady] = useState(true);
 
@@ -98,21 +99,20 @@ const ChatWindow = ({
         query: question
       },{
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       console.log(response);
-      alert(response.data.answer);
+      // alert(response.data.answer);
     } catch (error) {
-      console.error("Error fetching answer:", error);
-      alert(error.response.data.message);
+      console.error(error);
+      // alert(error.response.data.message);
     }
   }
 
-  useEffect(() => {
-    getanswer("HEllo");
-  })
+  // useEffect(() => {
+  //   getanswer("HEllo");
+  // })
 
   // Auto-resize textarea based on content
   useEffect(() => {

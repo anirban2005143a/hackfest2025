@@ -168,11 +168,13 @@ const getanswer = async (req, res) => {
   try {
     const { query } = req.body;
 
+    console.log(query)
+
     // Call Flask API
     const response = await axios.post(`${process.env.FLASK_API_URL}/api/query`, {
       query: query
     });
-    
+    console.log(response);
     return res.json({ error: false, data: response.data, message: "Response from AI service" });
   } catch (error) {
     console.error(error);

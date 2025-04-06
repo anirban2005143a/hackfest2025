@@ -3,11 +3,13 @@ import ChatInterface from './ChatInterface';
 import AuthContext from '../../Context/Authcontext';
 import Loader from '../../components/loader/Loader';
 import { ToastContainer , toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function Chat() {
 
   const { isAuthenticated, setIsAuthenticated, verifyAuth } = useContext(AuthContext);
 
+  const navigate = useNavigate()
   // useEffect(() => {
   //   if (isAuthenticated === null) {
   //     verifyAuth()

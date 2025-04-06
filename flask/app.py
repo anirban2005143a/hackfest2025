@@ -242,6 +242,7 @@ class GeminiRAGAgent:
 
 # --- Initialize System ---
 def initialize_system():
+    print(torch.cuda.is_available())
     print("Initializing system...")
     
     # Initialize models
@@ -397,6 +398,7 @@ def handle_query():
             return jsonify({"error": "No query provided", "status": "error"}), 400
         
         query = data['query']
+        print(query)
         
         with torch.no_grad():
             response = tool_caller.generate_response(query)
