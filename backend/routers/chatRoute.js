@@ -14,5 +14,6 @@ router.post("/updatechatquestion", authMiddleware.authUser, savingresponse.updat
 router.post("/deletechathistory", authMiddleware.authUser, savingresponse.deletechathistory);
 router.post("/setarchievehistory",  authMiddleware.authUser,savingresponse.setarchievechat);
 router.post("/chatinfo",  authMiddleware.authUser,savingresponse.chatinfo);
+router.post("/getanswer",  authMiddleware.authUser,savingresponse.getanswer);
 
 module.exports = router;

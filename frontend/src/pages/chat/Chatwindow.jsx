@@ -90,6 +90,13 @@ const ChatWindow = ({
 
   };
 
+  const getanswer = async (question) => {
+    const response = await axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/getanswer`, {
+      query: question
+    });
+    console.log(response);
+  }
+
   // Auto-resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {

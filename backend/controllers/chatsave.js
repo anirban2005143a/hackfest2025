@@ -1,3 +1,7 @@
+const axios = require("axios");
+require("dotenv").config();
+
+
 const ChatHistory = require("../model/Chathistory");
 const User = require("../model/userModel");
 
@@ -160,6 +164,26 @@ const chatinfo = async (req, res) => {
   return res.status(200).json({ error: false, chat });
 };
 
+const getanswer = async (res, res) => {
+  try {
+    const { query } = req.body;
+
+    // Call Flask API
+    const response = await axios.post(`${process.env.FLASK_API_URL}/api/query`, {
+      query: query
+    });
+
+    return res.json({ error: false, data: response.data, message: "Response from AI service" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: true,
+      message: 'Failed to get response from AI service',
+      details: error.message
+    });
+  }
+}
+
 module.exports = {
   savingresponse,
   getchathistory,
@@ -167,4 +191,5 @@ module.exports = {
   deletechathistory,
   setarchievechat,
   chatinfo,
+  getanswer
 };
