@@ -9,6 +9,8 @@ const ChatInterface = () => {
   const [isNavOpen, setIsNavOpen] = useState(window.innerWidth >= 640 ? true : false);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isChatInfoFetching, setisChatInfoFetching] = useState(true)
+  const [chatCount, setchatCount] = useState(0)
+
   const mainRef = useRef(null);
 
   // console.log(selectedChat)
@@ -27,6 +29,7 @@ const ChatInterface = () => {
               setisChatInfoFetching={setisChatInfoFetching}
               setSelectedChatId={setSelectedChatId}
               selectedChatId={selectedChatId}
+              setchatCount={setchatCount}
             />
             {/* chat window  */}
             <div
@@ -39,6 +42,7 @@ const ChatInterface = () => {
                 setisChatInfoFetching={setisChatInfoFetching}
                 setSelectedChatId={setSelectedChatId}
                 selectedChatId={selectedChatId}
+                chatCount={chatCount}
               />
             </div>
           </div>
