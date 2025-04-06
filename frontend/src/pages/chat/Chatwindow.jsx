@@ -111,7 +111,7 @@ const ChatWindow = ({
   }
 
   useEffect(() => {
-    getanswer(question);
+    getanswer("HEllo");
   })
 
   // Auto-resize textarea based on content
