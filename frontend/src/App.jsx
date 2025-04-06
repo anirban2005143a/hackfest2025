@@ -16,7 +16,6 @@ import About from "./pages/About/About.jsx";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [errorMessage, seterrorMessage] = useState("")
 
   const verifyAuth = async () => {
     try {

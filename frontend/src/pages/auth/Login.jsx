@@ -130,10 +130,10 @@ function Login() {
 
       if (response?.data?.token) {
         setIsAuthenticated(true);
-        localStorage.setItem("token", response.data.token);
-        // alert(response.data.message);
+        localStorage.setItem("token", response?.data?.token);
+        localStorage.setItem("userid", response?.data?.userid);
+        localStorage.setItem("email", response?.data?.email);
         showToast(response.data.message, false)
-        localStorage.setItem("userid", response.data.userid);
         navigate("/");
       }
     } catch (error) {

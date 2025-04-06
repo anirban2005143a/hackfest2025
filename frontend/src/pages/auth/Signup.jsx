@@ -109,6 +109,7 @@ function Signup() {
         setIsAuthenticated(true);
         localStorage.setItem("token", response?.data?.token);
         localStorage.setItem("userid", response?.data?.userid);
+        localStorage.setItem("email", response?.data?.email);
         navigate("/");
       }
     } catch (error) {
