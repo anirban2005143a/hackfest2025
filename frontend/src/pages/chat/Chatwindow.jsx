@@ -110,9 +110,10 @@ const ChatWindow = ({
     }
   }
 
-  // useEffect(() => {
-  //   getanswer("HEllo");
-  // })
+  useEffect(() => {
+    console.log("ChatWindow mounted");
+    getanswer("Capital of India?");
+  })
 
   // Auto-resize textarea based on content
   useEffect(() => {

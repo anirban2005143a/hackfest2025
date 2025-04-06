@@ -67,16 +67,16 @@ def initialize_models():
 
 # --- Tool Classes ---
 class Tool:
-    def _init_(self, name: str, description: str, func: Callable):
+    def __init__(self, name: str, description: str, func: Callable):
         self.name = name
         self.description = description
         self.func = func
 
-    def _call_(self, **kwargs) -> Any:
+    def __call__(self, **kwargs) -> Any:
         return self.func(**kwargs)
 
 class ToolRegistry:
-    def _init_(self):
+    def __init__(self):
         self.tools: Dict[str, Tool] = {}
     
     def register(self, tool: Tool):
@@ -109,7 +109,7 @@ To use a tool, output in this format:
     }}
 }}
 
-Respond to the user's request, using tools whenever necessary. You are not allowed to make nested tool calls. You can only make tool calls in a sequential manner. After Answering the Question stop."""
+Respond to the user's request, using tools whenever necessary. You are not allowed to make nested tool calls. You can only allowed to make a single tool call."""
 
 def generate_until_pattern(model, tokenizer, initial_prompt, pattern, max_length=2048):
     eos_token_id = tokenizer.eos_token_id
@@ -143,16 +143,17 @@ def generate_until_pattern(model, tokenizer, initial_prompt, pattern, max_length
                 skip_special_tokens=True
             )
             generated_text += next_token_text
+            print(tokenizer.decode(output_tokens[0], skip_special_tokens=True))
             for match in re.finditer(pattern, generated_text, re.DOTALL):
                 return tokenizer.decode(output_tokens[0], skip_special_tokens=True), True, (match.start(), match.end())
             
             input_ids = next_token_id
             attention_mask = torch.ones_like(input_ids)
             current_length += 1
-    return tokenizer.decode(output_tokens[0], skip_special_tokens=True), False, None
+            return tokenizer.decode(output_tokens[0], skip_special_tokens=True), False, None
 
 class LLMToolCaller:
-    def _init_(self, model, tokenizer, tool_registry: ToolRegistry):
+    def __init__(self, model, tokenizer, tool_registry: ToolRegistry):
         self.tokenizer = tokenizer
         self.model = model
         self.tool_registry = tool_registry
@@ -194,33 +195,21 @@ class LLMToolCaller:
 
     def generate_response(self, prompt: str, max_new_tokens: int = 2048) -> str:
         system_prompt = prompt_template(self.tool_registry.get_tool_descriptions())
-        full_prompt = f"{system_prompt}\n\nUser: {prompt}\n\nAssistant:"
-        flag = True
-        while flag:
-            inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.model.device)
-            response, flag, po = generate_until_pattern(
-                self.model, self.tokenizer, full_prompt,
-                r'\{\s*"name"\s*:\s*"(.?)"\s,\s*"arguments"\s*:\s*\{(.?)\}\s\}'
-            )
-            response = response[len(full_prompt):].strip()
-            tool_calls = self._extract_tool_calls(response)
-            if tool_calls:
-                results = self._execute_tool_calls(tool_calls)
-                full_prompt = f"{full_prompt}\n{response}\n\nTool Results:\n{json.dumps(results, indent=2)}"
-        
-        tool_results_prompt = f"{full_prompt}\n\nFinal Response: "
-        inputs = self.tokenizer(tool_results_prompt, return_tensors="pt").to(self.model.device)
+        full_prompt = f"User: {prompt}\n\nAssistant:"
+        inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.model.device)
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=max_new_tokens,
+            max_new_tokens=10,
             pad_token_id=self.tokenizer.eos_token_id,
             do_sample=False
         )
+
         final_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return final_response[len(tool_results_prompt):].strip()
+        # return final_response[len(tool_results_prompt):].strip()
+        return final_response[len(full_prompt):].strip()
 
 class GeminiRAGAgent:
-    def _init_(self, agent_name: str, df: pd.DataFrame, index: faiss.Index, embed_model: SentenceTransformer):
+    def __init__(self, agent_name: str, df: pd.DataFrame, index: faiss.Index, embed_model: SentenceTransformer):
         self.agent_name = agent_name
         self.df = df
         self.index = index
@@ -241,6 +230,10 @@ class GeminiRAGAgent:
         return response.text
 
 # --- Initialize System ---
+
+dfs = {}  # DataFrames for each subfolder
+indexes = {}  # FAISS indexes for each subfolder 
+
 def initialize_system():
     print(torch.cuda.is_available())
     print("Initializing system...")
@@ -249,7 +242,7 @@ def initialize_system():
     llmagent, llmtokenizer, embed_model = initialize_models()
     
     # Initialize Google Drive service
-    SERVICE_ACCOUNT_FILE = "concrete-area-455907-j8-fffe5bd448b8.json"  # Update path
+    SERVICE_ACCOUNT_FILE = r"C:\Users\hs106\OneDrive - Indian Institute of Technology Indian School of Mines Dhanbad\Desktop\haclfest\hackfest2025\flask\concrete-area-455907-j8-fffe5bd448b8.json"  # Update path
     CACHE_FILE = "file_hashes.json"
     CHUNK_SIZE = 250
     SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -270,9 +263,6 @@ def initialize_system():
             file_cache = json.load(f)
     else:
         file_cache = {}
-
-    dfs = {}  # DataFrames for each subfolder
-    indexes = {}  # FAISS indexes for each subfolder
 
     for folder_name, folder_id in SUBFOLDER_INFO.items():
         print(f"Processing folder: {folder_name}")
@@ -354,6 +344,8 @@ def initialize_system():
     # Initialize RAG agents
     registry = ToolRegistry()
     agents: Dict[str, GeminiRAGAgent] = {}
+    for agent_name in dfs.keys():
+        agents[agent_name] = GeminiRAGAgent(agent_name, dfs[agent_name],indexes[agent_name],embed_model)
 
     def make_rag_tool(agent_name: str):
         def rag_tool(query: str) -> str:
@@ -402,13 +394,16 @@ def handle_query():
         
         with torch.no_grad():
             response = tool_caller.generate_response(query)
-        
+
+        print(response)
+        print("Response generated successfully!")
         return jsonify({
             "response": response,
             "status": "success"
         })
     
     except Exception as e:
+        print(f"Error processing query: {e}")
         return jsonify({
             "error": str(e),
             "status": "error"
