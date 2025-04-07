@@ -23,7 +23,7 @@ function Chat() {
   return (
     <>
       {!isAuthenticated && <Loader/>}
-      {isAuthenticated && <div className="app w-screen dark-theme h-screen bg-gray-950 overflow-x-hidden">
+      {isAuthenticated && <div className="app w-screen dark-theme h-screen bg-gray-950 overflow-hidden">
         <ChatInterface />
       </div>}
     </>
