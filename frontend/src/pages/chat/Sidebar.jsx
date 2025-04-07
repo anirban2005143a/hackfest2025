@@ -172,6 +172,9 @@ const Sidebar = ({ isNavOpen, setchatCount, setisChatInfoFetching, setSelectedCh
   };
 
   const handelDeletechatFromArray = (id) => {
+    const arr = allChats
+    const newArr = arr.filter((chat)=> chat.chatId != id)
+    newArr.length === 0 ? setSelectedChatId(null) : setSelectedChatId(newArr[0].chatId)
     setallChats((prev) => prev.filter((chat) => chat.chatId != id));
   };
 

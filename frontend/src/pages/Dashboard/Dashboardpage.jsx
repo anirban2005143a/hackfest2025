@@ -183,7 +183,7 @@ function Dashboard() {
     if (isAuthenticated === false) navigate("/auth/login")
   }, [isAuthenticated])
 
-  // console.log(data)
+  console.log(data)
 
   return (
     <>

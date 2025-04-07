@@ -37,7 +37,7 @@ const ChatWindow = ({
     const newMessage = {
       question: input,
       answer: [],
-      _id: uuidv4(),
+      // _id: uuidv4(),
       createdAt: new Date().toISOString(),
     };
 
@@ -74,15 +74,16 @@ const ChatWindow = ({
     console.log(chats);
 
     if (!chats || (chats && chats.length === 0)) {
-      const res = await saveChatResponse(undefined, "How can i help you?", uuidv4(), localStorage.getItem("userid") || 123, localStorage.getItem("chatTitle"))
+      const res = await saveChatResponse(undefined, "How can i help you?", selectedChatId, localStorage.getItem("userid") || 123, localStorage.getItem("chatTitle"))
       if (res.error) {
         showToast(res.message, 1);
         return;
       }
+      console.log(selectedChatId)
       const newMessage = {
         question: undefined,
         answer: ["How can i help you?"],
-        _id: uuidv4(),
+        // _id: uuidv4(),
         createdAt: new Date().toISOString(),
       };
 
@@ -144,14 +145,15 @@ const ChatWindow = ({
         saveChat(
           question,
           response,
-          params.chatId,
+          selectedChatId,
           localStorage.getItem("userid") || "123",
           localStorage.getItem("chatTitle") || "New chat"
         );
+        console.log(selectedChatId)
         const assistantMessage = {
           question: null,
           answer: [response],
-          _id: uuidv4(),
+          // _id: uuidv4(),
           createdAt: new Date().toISOString(),
         };
         setquestion("");
