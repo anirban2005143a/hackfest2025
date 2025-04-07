@@ -118,5 +118,3 @@ MIT License. See [LICENSE](LICENSE).
 - Replace placeholder links (demo GIF, LICENSE, contact).  
 - Add screenshots in `/assets` for visual appeal.  
 - For **CUDA issues**, link to detailed troubleshooting docs in your wiki.  
-
-This README highlights **financial use cases**, **your web dev contributions**, and **ML integration** while keeping setup instructions clear. Let me know if you’d like to tweak any section!
