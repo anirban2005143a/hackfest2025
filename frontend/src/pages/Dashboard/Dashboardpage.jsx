@@ -190,7 +190,7 @@ function Dashboard() {
       <ToastContainer />
       {loading && <Loader />}
       {!isAuthenticated && <Loader />}
-      {isAuthenticated && !loading && <div className="app dark-theme min-h-screen bg-gray-950 ">
+      {isAuthenticated && !loading && <div className="app dark-theme min-h-screen bg-gray-950 overflow-x-hidden">
         <Navbar isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />
 
         <div className="md:h-screen h-auto flex flex-col md:flex-row gap-4 p-4 pt-24">
