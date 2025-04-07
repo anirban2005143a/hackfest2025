@@ -104,7 +104,11 @@ MIT License. See [LICENSE](LICENSE).
 
 ## **💬 Contact**  
 **Team VAAHM**  
-- [Vaibhav Aryan](https://linkedin.com/in/yourprofile)  
+- [Harshvardhan Saini](https://www.linkedin.com/in/harshvardhan-saini-h1065/)  
+- [Anirban Das](https://www.linkedin.com/in/anirban-das-2014412b9/)  
+- [Mukil M](https://www.linkedin.com/in/mukil-m-941513287/)  
+- [Mohd Ashaz Khan](https://www.linkedin.com/in/mohd-ashaz-khan-235244287/)  
+- [Vaibhav Aryan](https://www.linkedin.com/in/vaibhav-aryan-00650b287/)  
 - *Hackfest 2025 | IIT (ISM) Dhanbad*  
 
 ---
