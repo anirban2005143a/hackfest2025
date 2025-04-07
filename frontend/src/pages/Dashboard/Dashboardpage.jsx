@@ -188,7 +188,8 @@ function Dashboard() {
   return (
     <>
       <ToastContainer />
-      {(!isAuthenticated || loading) && <Loader />}
+      {loading && <Loader />}
+      {!isAuthenticated && <Loader />}
       {isAuthenticated && !loading && <div className="app dark-theme min-h-screen bg-gray-950 ">
         <Navbar isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />
 
