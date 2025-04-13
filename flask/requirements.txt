@@ -1,0 +1,13 @@
+Flask
+flask-cors
+numpy
+pandas
+pdfplumber
+sentence-transformers
+faiss-cpu  # or faiss-gpu if you're using CUDA
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+torch
+google-generativeai
