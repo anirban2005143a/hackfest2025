@@ -1,69 +1,62 @@
 from flask import Flask, request, jsonify
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import pickle
-from sklearn.feature_extraction.text import TfidfVectorizer  # Example, adjust based on your model
+from typing import Dict, Any
+from werkzeug.exceptions import BadRequest
+import json
 import os
 
 app = Flask(__name__)
 
-# Load the model and any necessary preprocessing objects
-model = None
-vectorizer = None
-
+# Load model and tokenizer (modify paths as needed)
 def load_model():
-    global model, vectorizer
-    
-    # Load your model (adjust paths as needed)
-    model_path = 'model.pkl'  # or your .pfl file path
-    vectorizer_path = 'vectorizer.pkl'  # if you have a separate vectorizer
-    
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found at {model_path}")
-    
-    with open(model_path, 'rb') as f:
-        model = pickle.load(f)
-    
-    # If you have a separate vectorizer
-    if os.path.exists(vectorizer_path):
-        with open(vectorizer_path, 'rb') as f:
-            vectorizer = pickle.load(f)
+    try:
+        # Load your existing model setup
+        model_path = os.path.join(os.path.dirname(__file__), 'llmagent.sav')
+        llmagent = pickle.load(open(model_path, 'rb')).to(device)
+        llmtokenizer = pickle.load(open('/llmtokenizer.sav','rb'))
+        return llmagent, llmtokenizer
+    except Exception as e:
+        raise RuntimeError(f"Failed to load model: {str(e)}")
 
-# Load model when starting the app
-load_model()
+# Initialize model and tool caller
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+model, tokenizer = load_model()
+tool_caller = LLMToolCaller(model, tokenizer, registry)  # Assuming registry is defined elsewhere
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Get text input from request
-        data = request.get_json()
-        text = data.get('text', '')
+        # Get input data
+        data: Dict[str, Any] = request.get_json()
         
-        if not text:
-            return jsonify({'error': 'No text provided'}), 400
-        
-        # Preprocess the text (adjust based on your model requirements)
-        if vectorizer:
-            processed_text = vectorizer.transform([text])
-        else:
-            processed_text = text  # if your model handles raw text
+        if not data or 'prompt' not in data:
+            raise BadRequest("Missing 'prompt' in request body")
         
         # Get prediction
-        prediction = model.predict(processed_text)
+        response = tool_caller.generate_response(data['prompt'])
         
-        # Convert prediction to a serializable format
-        if hasattr(prediction, 'tolist'):  # for numpy arrays
-            prediction = prediction.tolist()
-        
+        # Prepare response
         return jsonify({
-            'input_text': text,
-            'prediction': prediction
+            'status': 'success',
+            'response': response,
+            'model': 'LLM Tool Caller',
+            'device': device
         })
     
+    except BadRequest as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'status': 'error', 'message': f"Prediction failed: {str(e)}"}), 500
 
-@app.route('/')
-def home():
-    return "AI Model Prediction Service - Send a POST request to /predict with JSON containing 'text'"
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'model_loaded': model is not None,
+        'device': device
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
