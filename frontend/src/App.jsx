@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/home.jsx";
 import Navbar from "./components/Navbar.jsx";
-import Signup from "./pages/auth/signup.jsx";
+import Signup from "./pages/auth/Signup.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Chat from "./pages/chat/Chat.jsx";
 import DashboardPage from "./pages/Dashboard/Dashboardpage.jsx";
@@ -11,11 +11,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import Feedback from "./pages/Feedback/Feedback.jsx";
+import About from "./pages/About/About.jsx";
 
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [errorMessage, seterrorMessage] = useState("")
 
   const verifyAuth = async () => {
     try {
@@ -73,6 +73,14 @@ function App() {
               element={
                 <>
                   <Navbar /> <Home />
+                </>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <>
+                  <Navbar /> <About />
                 </>
               }
             />

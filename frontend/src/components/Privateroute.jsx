@@ -13,6 +13,7 @@ function PrivateRoute({ children }) {
       const token = localStorage.getItem("token");
       
       if (!token) {
+        navigate("/auth/login")
         throw new Error("No authentication token found");
       }
 

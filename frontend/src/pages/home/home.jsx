@@ -31,6 +31,7 @@ function Home() {
     },
     
   ];
+
   //function to show alert
   const showToast = (message, err) => {
     if (err) {

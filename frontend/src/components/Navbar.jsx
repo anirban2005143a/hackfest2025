@@ -154,7 +154,7 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
 
   return (
     <motion.nav
-      className="fixed w-full z-10  "
+      className="fixed w-full z-50  "
       initial={{ y: 0 }}
       animate={{ y: isVisible ? 0 : "-100%" }}
       transition={{ duration: 0.4, ease: "easeInOut" }}
@@ -298,11 +298,22 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
               </svg>
             </button>
             <div className=' flex flex-col items-start gap-10  pt-[20px] text-white'>
-              <Link to={`/chat/${localStorage.getItem("userid") || "123"}`} className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Ask AI</Link>
-              <Link to='/about' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">About</Link>
-              {isAuthenticated && <Link to='/dashboard' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Feedback</Link>}
-              {isAuthenticated && <Link to='/' onClick={handleLogout} className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log out</Link>}
-              {!isAuthenticated && <Link to='/auth/login' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log in</Link>}
+              <Link onClick={()=>{
+                setIsMenuOpen(false)
+              }} to={`/chat/${localStorage.getItem("userid") || "123"}`} className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Ask AI</Link>
+              <Link onClick={()=>{
+                setIsMenuOpen(false)
+              }} to='/about' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">About</Link>
+              {isAuthenticated && <Link onClick={()=>{
+                setIsMenuOpen(false)
+              }} to='/dashboard' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Feedback</Link>}
+              {isAuthenticated && <Link onClick={()=>{
+                setIsMenuOpen(false)
+                handleLogout()
+              }} to='/'  className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log out</Link>}
+              {!isAuthenticated && <Link onClick={()=>{
+                setIsMenuOpen(false)
+              }} to='/auth/login' className="text-white hover:underline hover:underline-offset-4  nav-menu-mobile">Log in</Link>}
             </div>
           </div>
         </div>

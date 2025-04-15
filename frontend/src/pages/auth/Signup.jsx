@@ -109,6 +109,7 @@ function Signup() {
         setIsAuthenticated(true);
         localStorage.setItem("token", response?.data?.token);
         localStorage.setItem("userid", response?.data?.userid);
+        localStorage.setItem("email", response?.data?.email);
         navigate("/");
       }
     } catch (error) {
@@ -209,7 +210,7 @@ function Signup() {
       <ToastContainer />
       <motion.div
         id='signup'
-        className="py-25 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4"
+        className="py-25 min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}

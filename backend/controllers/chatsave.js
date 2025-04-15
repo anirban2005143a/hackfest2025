@@ -1,3 +1,6 @@
+const axios = require("axios");
+require("dotenv").config();
+
 const ChatHistory = require("../model/Chathistory");
 const User = require("../model/userModel");
 
@@ -6,7 +9,7 @@ const savingresponse = async (req, res) => {
     console.log("aaaya");
     const { question, answer, uniqueId, user_id, title } = req.body;
     console.log(req.body);
-    if (!question || !answer || !uniqueId || !user_id) {
+    if (!answer || !uniqueId || !user_id) {
       return res
         .status(400)
         .json({ error: true, message: "All fields are required" });
@@ -160,6 +163,35 @@ const chatinfo = async (req, res) => {
   return res.status(200).json({ error: false, chat });
 };
 
+const getanswer = async (req, res) => {
+  try {
+    const { input } = req.body;
+    if(!input) {
+      return res.status(400).json({ error: true, message: "Input is required" });
+    }
+    console.log(input);
+
+    // Call Flask API
+    console.log(process.env.FLASK_API_URL);
+    const response = await axios.post(`${process.env.FLASK_API_URL}/predict`, {
+      input: input,
+    });
+    console.log(response);
+    return res.json({
+      error: false,
+      data: response.data,
+      message: "Response from AI service",
+    });
+  } catch (error) {
+    console.error(error.details || error);
+    return res.status(500).json({
+      error: true,
+      message: "Failed to get response from AI service",
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   savingresponse,
   getchathistory,
@@ -167,4 +199,5 @@ module.exports = {
   deletechathistory,
   setarchievechat,
   chatinfo,
+  getanswer,
 };

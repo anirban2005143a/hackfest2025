@@ -6,8 +6,8 @@ const chatSchema = new mongoose.Schema(
     title: { type: String, required: true },
     chatList: [
       {
-        question: { type: String, required: true },
-        answer: [{ type: String, required: true }],
+        question: { type: String },
+        answer: [{ type: String }],
         createdAt: { type: Date, default: Date.now },
       },
     ],
