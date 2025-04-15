@@ -433,14 +433,14 @@ function Dashboard() {
                             console.log("clicked", index);
                           }}
                         >
-                          <div className="flex items-center gap-5 justify-between cursor-pointer">
-                            <div className="flex items-center ">
+                          <div className="flex items-start gap-2 justify-between cursor-pointer">
+                            <div className=" overflow-hidden flex flex-col justify-center ">
                               <p className="text-white text-sm">{item.title}</p>
-                            </div>
-                            <div className=" flex items-center">
                               <p className="text-gray-400 text-xs">
                                 {getTimeAgo(item.createdAt)}
                               </p>
+                            </div>
+                            <div className=" flex items-center">
                               <button
                                 className="text-gray-400 hover:text-red-400 p-2 -mr-2 transition-colors cursor-pointer"
                                 onClick={(e) => {

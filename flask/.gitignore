@@ -1,6 +1,9 @@
 
-
-
+# Ignore the dynamically created folders 
+competitor_intel_index/
+financial_data_index/
+market_demographics_index/
+product_info_index/
 
 # Ignore virtual environment folders
 venv/

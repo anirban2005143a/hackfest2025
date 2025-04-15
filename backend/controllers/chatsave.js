@@ -1,22 +1,21 @@
 const axios = require("axios");
 require("dotenv").config();
 
-
 const ChatHistory = require("../model/Chathistory");
 const User = require("../model/userModel");
 
 const savingresponse = async (req, res) => {
   try {
-    console.log("aaaya");
+    // console.log("aaaya");
     const { question, answer, uniqueId, user_id, title } = req.body;
-    console.log(req.body);
-    if ( !answer || !uniqueId || !user_id) {
+    // console.log(req.body);
+    if (!answer || !uniqueId || !user_id) {
       return res
         .status(400)
         .json({ error: true, message: "All fields are required" });
     }
     const chat = await ChatHistory.findOne({ chatId: uniqueId });
-    console.log(chat);
+    // console.log(chat);
 
     if (!chat) {
       const newchat = await ChatHistory.create({
@@ -166,25 +165,32 @@ const chatinfo = async (req, res) => {
 
 const getanswer = async (req, res) => {
   try {
-    const { query } = req.body;
-
-    console.log(query)
+    const { input } = req.body;
+    if(!input) {
+      return res.status(400).json({ error: true, message: "Input is required" });
+    }
+    console.log(input);
 
     // Call Flask API
-    const response = await axios.post(`${process.env.FLASK_API_URL}/api/query`, {
-      query: query
+    console.log(process.env.FLASK_API_URL);
+    const response = await axios.post(`${process.env.FLASK_API_URL}/predict`, {
+      input: input,
     });
-    console.log(response);
-    return res.json({ error: false, data: response.data, message: "Response from AI service" });
+    console.log(response.data);
+    return res.json({
+      error: false,
+      data: response.data,
+      message: "Response from AI service",
+    });
   } catch (error) {
-    console.error(error);
+    console.error(error.response.data.message || error.response.message || error.details || error.message || error);
     return res.status(500).json({
       error: true,
-      message: 'Failed to get response from AI service',
-      details: error.message
+      message: "Failed to get response from AI service",
+      details: error.message,
     });
   }
-}
+};
 
 module.exports = {
   savingresponse,
@@ -193,5 +199,5 @@ module.exports = {
   deletechathistory,
   setarchievechat,
   chatinfo,
-  getanswer
+  getanswer,
 };

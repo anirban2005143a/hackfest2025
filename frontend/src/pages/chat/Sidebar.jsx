@@ -242,7 +242,7 @@ const Sidebar = ({ isNavOpen, setchatCount, setisChatInfoFetching, setSelectedCh
                 {sortedChats.map((chat, ind) => (
                   <li
                     key={ind}
-                    className={`group flex items-center justify-between p-1 rounded hover:bg-gray-800 ${selectedChatId === chat.chatId ? "bg-gray-700" : ""
+                    className={`group cursor-pointer flex overflow-hidden items-center justify-between p-1 rounded hover:bg-gray-800 ${selectedChatId === chat.chatId ? "bg-gray-700" : ""
                       }`}
                     onClick={() =>
                       handleChatClick(chat.chatId, chat.chatList, chat.title)
@@ -256,7 +256,7 @@ const Sidebar = ({ isNavOpen, setchatCount, setisChatInfoFetching, setSelectedCh
                     </span>
                     <div className="relative" ref={dropdownRef}>
                       {!isChatDeleting && <button
-                        className="p-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        className="p-1 text-red-500  opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         onClick={(e) => {
                           handleDeleteChat(chat.chatId);
                           e.stopPropagation();

@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Send, Bot, User, Loader2, MicOff, Mic } from "lucide-react";
 import { saveChatResponse } from "./functions/saveChat";
-import { v4 as uuidv4 } from "uuid";
 import { useParams } from "react-router-dom";
 import { getChatInfo } from "./functions/getChatInfo";
-import axios from "axios";
-import { toast } from "react-toastify";
+import { getresponse } from "./functions/getanswer";
+import ReactMarkdown from 'react-markdown';
 
 const ChatWindow = ({
   isChatInfoFetching,
@@ -74,12 +73,18 @@ const ChatWindow = ({
     console.log(chats);
 
     if (!chats || (chats && chats.length === 0)) {
-      const res = await saveChatResponse(undefined, "How can i help you?", selectedChatId, localStorage.getItem("userid") || 123, localStorage.getItem("chatTitle"))
+      const res = await saveChatResponse(
+        undefined,
+        "How can i help you?",
+        selectedChatId,
+        localStorage.getItem("userid") || 123,
+        localStorage.getItem("chatTitle")
+      );
       if (res.error) {
         showToast(res.message, 1);
         return;
       }
-      console.log(selectedChatId)
+      console.log(selectedChatId);
       const newMessage = {
         question: undefined,
         answer: ["How can i help you?"],
@@ -91,25 +96,30 @@ const ChatWindow = ({
     }
 
     setisChatInfoFetching(false);
-
   };
 
-  const getanswer = async (question) => {
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/getanswer`, {
-        query: question
-      },{
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      console.log(response);
-      // alert(response.data.answer);
-    } catch (error) {
-      console.error(error);
-      // alert(error.response.data.message);
-    }
+  const getAnswer = async (input) => {
+    const res = await getresponse(input);
+    console.log(res);
+    // convertToFormattedHTML(res);
+    const convertedText = convertToFormattedHTML(res);
+    setanswer(convertedText);
+  };
+
+  // convert /n text to normal text
+  function convertToFormattedHTML(escapedString) {
+    return escapedString
+      .replace(/\\n/g, "<br>") // Line breaks
+      .replace(/\\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;") // Tabs as 4 spaces
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // **bold**
+      .replace(/_(.*?)_/g, "<em>$1</em>") // _italic_
+      .replace(/\*(.*?)\*/g, "<em>$1</em>") // *italic*
+      .replace(/\\"/g, '"') // \" -> "
+      .replace(/\\'/g, "'") // \' -> '
+      .replace(/\\\\/g, "\\"); // \\ -> \
   }
+
+  // console.log(convertToFormattedHTML("Hi!\\nThis is *italic*.\\nThis is **bold** and _also italic_."))
 
   // useEffect(() => {
   //   console.log("ChatWindow mounted");
@@ -134,34 +144,34 @@ const ChatWindow = ({
   }, [input]);
 
   useEffect(() => {
+    if (answer) {
+      saveChat(
+        question,
+        answer,
+        selectedChatId,
+        localStorage.getItem("userid") || "123",
+        localStorage.getItem("chatTitle") || "New chat"
+      );
+      console.log(selectedChatId);
+      const assistantMessage = {
+        question: null,
+        answer: [answer],
+        // _id: uuidv4(),
+        createdAt: new Date().toISOString(),
+      };
+
+      setquestion("");
+      setanswer("");
+      setisReady(true);
+      setisFetching(false);
+      setMessages((prev) => [...prev, assistantMessage]);
+    }
+  }, [answer]);
+
+  useEffect(() => {
     if (question) {
       setisFetching(true);
-      setTimeout(() => {
-        // Simulate assistant response
-        const response =
-          "This is a simulated response. The actual integration with an AI model would go here.";
-        // setanswer(response)
-
-        saveChat(
-          question,
-          response,
-          selectedChatId,
-          localStorage.getItem("userid") || "123",
-          localStorage.getItem("chatTitle") || "New chat"
-        );
-        console.log(selectedChatId)
-        const assistantMessage = {
-          question: null,
-          answer: [response],
-          // _id: uuidv4(),
-          createdAt: new Date().toISOString(),
-        };
-        setquestion("");
-        // setanswer("")
-        setisReady(true);
-        setisFetching(false);
-        setMessages((prev) => [...prev, assistantMessage]);
-      }, 2000);
+      getAnswer(question);
     }
   }, [question]);
 
@@ -240,116 +250,128 @@ const ChatWindow = ({
   // console.log(selectedChat)
   return (
     <>
-      {!chatCount && <div className=" w-full h-full flex justify-center items-center">
-        <p className=" sm:text-2xl text-xl text-white text-center">Please create a chat</p>
-      </div> }
-      {chatCount && <div className="flex flex-col h-full  rounded-t-2xl">
-        {/* Messages Container */}
-        <div ref={massagesRef} className="flex-1 overflow-y-auto   p-4 space-y-4">
-          {isChatInfoFetching && (
-            <div className=" h-full w-full flex justify-center items-center  ">
-              <Loader2 size={50} color="blue" className=" animate-spin" />
-            </div>
-          )}
+      {!chatCount && (
+        <div className=" w-full h-full flex justify-center items-center">
+          <p className=" sm:text-2xl text-xl text-white text-center">
+            Please create a chat
+          </p>
+        </div>
+      )}
+      {chatCount && (
+        <div className="flex flex-col h-full  rounded-t-2xl">
+          {/* Messages Container */}
+          <div
+            ref={massagesRef}
+            className="flex-1 overflow-y-auto   p-4 space-y-4"
+          >
+            {isChatInfoFetching && (
+              <div className=" h-full w-full flex justify-center items-center  ">
+                <Loader2 size={50} color="blue" className=" animate-spin" />
+              </div>
+            )}
 
-          {!isChatInfoFetching &&
-            messages &&
-            messages.map((message, ind) => {
-              // Transform question messages (user role)
-              return (
-                <div key={ind} className=" flex flex-col gap-4">
-                  {/* Message Item */}
-                  {message.question && (
-                    <div className="flex justify-end">
-                      <div className="flex gap-3 max-w-[80%] flex-row-reverse">
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                          <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
-                        </div>
-                        <div className="px-4 py-2 w-full bg-blue-600 text-white rounded-br-2xl rounded-l-2xl">
-                          <p className="text-sm">{message.question}</p>
+            {!isChatInfoFetching &&
+              messages &&
+              messages.map((message, ind) => {
+                // Transform question messages (user role)
+                return (
+                  <div key={ind} className=" flex flex-col gap-4">
+                    {/* Message Item */}
+                    {message.question && (
+                      <div className="flex justify-end">
+                        <div className="flex gap-3 max-w-[80%] flex-row-reverse">
+                          <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                            <User className="w-6 h-6 text-white bg-blue-600 rounded-full p-1" />
+                          </div>
+                          <div className="px-4 py-2 w-full bg-blue-600 text-white rounded-br-2xl rounded-l-2xl">
+                            <p className="text-sm">{message.question}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {message.answer && message.answer.length > 0 && (
-                    <div className="flex justify-start">
-                      <div className="flex gap-3 max-w-[80%] flex-row">
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                          <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-                        </div>
-                        <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
-                          <p className="text-sm">{message.answer[0]}</p>
+                    {message.answer && message.answer.length > 0 && (
+                      <div className="flex justify-start">
+                        <div className="flex gap-3 max-w-[80%] flex-row">
+                          <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                            <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
+                          </div>
+                          <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
+                            <div className="text-sm">
+                              <ReactMarkdown>{message.answer[0]}</ReactMarkdown>
+                            </div>
+                          </div>
                         </div>
                       </div>
+                    )}
+                  </div>
+                );
+              })}
+            {!isChatInfoFetching && isFetching && (
+              <div className="flex justify-start">
+                <div className="flex gap-3 max-w-[80%] flex-row">
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
+                    <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
+                  </div>
+                  <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
+                    <div className=" flex items-center gap-3">
+                      <p className="text-sm">Fetching...</p>
+                      <Loader2 className=" animate-spin" />
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          {!isChatInfoFetching && isFetching && (
-            <div className="flex justify-start">
-              <div className="flex gap-3 max-w-[80%] flex-row">
-                <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-700">
-                  <Bot className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-                </div>
-                <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
-                  <div className=" flex items-center gap-3">
-                    <p className="text-sm">Fetching...</p>
-                    <Loader2 className=" animate-spin" />
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Input Form */}
-        <div className="border-t border-gray-700 bg-gray-800 p-4">
-          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-            <div className="relative flex items-end">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your message... (Shift+Enter for new line)"
-                rows="1"
-                className="w-full py-2 px-3 pr-10 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors placeholder-gray-400 resize-none"
-                style={{
-                  minHeight: "44px",
-                  maxHeight: "150px",
-                }}
-              />
-              {isBrowserSupported && (
-                <button
-                  type="button"
-                  onClick={toggleListening}
-                  className={`absolute right-12 bottom-2 p-1 cursor-pointer transition-colors ${isListening
-                    ? "text-red-400 hover:text-red-300"
-                    : "text-gray-400 hover:text-blue-100"
+          {/* Input Form */}
+          <div className="border-t border-gray-700 bg-gray-800 p-4">
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+              <div className="relative flex items-end">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type your message... (Shift+Enter for new line)"
+                  rows="1"
+                  className="w-full py-2 px-3 pr-10 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors placeholder-gray-400 resize-none"
+                  style={{
+                    minHeight: "44px",
+                    maxHeight: "150px",
+                  }}
+                />
+                {isBrowserSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    className={`absolute right-12 bottom-2 p-1 cursor-pointer transition-colors ${
+                      isListening
+                        ? "text-red-400 hover:text-red-300"
+                        : "text-gray-400 hover:text-blue-100"
                     }`}
-                  disabled={!isReady}
+                    disabled={!isReady}
+                  >
+                    {isListening ? (
+                      <MicOff className="w-5 h-5" />
+                    ) : (
+                      <Mic className="w-5 h-5" />
+                    )}
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="absolute right-4 bottom-2 p-1 text-gray-400 cursor-pointer hover:text-blue-100 transition-colors disabled:opacity-50"
+                  disabled={!isReady || !input.trim()}
+                  onClick={handleSubmit}
                 >
-                  {isListening ? (
-                    <MicOff className="w-5 h-5" />
-                  ) : (
-                    <Mic className="w-5 h-5" />
-                  )}
+                  <Send className="w-5 h-5" />
                 </button>
-              )}
-              <button
-                type="submit"
-                className="absolute right-4 bottom-2 p-1 text-gray-400 cursor-pointer hover:text-blue-100 transition-colors disabled:opacity-50"
-                disabled={!isReady || !input.trim()}
-                onClick={handleSubmit}
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </form>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>}
+      )}
     </>
   );
 };
