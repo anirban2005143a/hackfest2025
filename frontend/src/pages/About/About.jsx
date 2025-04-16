@@ -32,9 +32,9 @@ function About() {
             .fromTo(subtitleRef.current, {
                 y: 40,
                 opacity: 0,
-            },{
-                y:0,
-                opacity:1,
+            }, {
+                y: 0,
+                opacity: 1,
                 duration: 0.8,
                 ease: 'power2.out'
             }, "-=0.5");
@@ -44,7 +44,7 @@ function About() {
             gsap.fromTo(card, {
                 y: 100,
                 opacity: 0,
-            },{
+            }, {
                 y: 0,
                 opacity: 1,
                 duration: 0.8,
@@ -62,7 +62,7 @@ function About() {
             gsap.fromTo(step, {
                 x: -100,
                 opacity: 0,
-            },{
+            }, {
                 x: 0,
                 opacity: 1,
                 duration: 0.8,
@@ -79,9 +79,9 @@ function About() {
         gsap.fromTo(architectureRef.current, {
             scale: 0.95,
             opacity: 0,
-        },{
-            scale:1,
-            opacity:1,
+        }, {
+            scale: 1,
+            opacity: 1,
             duration: 1,
             scrollTrigger: {
                 trigger: architectureRef.current,
@@ -94,7 +94,7 @@ function About() {
         gsap.fromTo(ctaRef.current, {
             y: 50,
             opacity: 0,
-        },{
+        }, {
             y: 0,
             opacity: 1,
             duration: 1,
@@ -108,7 +108,7 @@ function About() {
         // Continuous animations
         gsap.fromTo('.pulse-animation', {
             y: 0,
-        },{
+        }, {
             y: -10,
             duration: 2,
             repeat: -1,
@@ -143,7 +143,8 @@ function About() {
 
     return (
         <div className="min-h-screen bg-gray-900 text-gray-100 overflow-hidden">
-            {/* Hero Section */}
+
+
             <div className="relative overflow-hidden py-32 lg:py-40 bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800">
                 <div className="absolute inset-0 opacity-20">
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30"></div>
@@ -161,8 +162,7 @@ function About() {
                             ref={subtitleRef}
                             className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
                         >
-                            Leveraging cutting-edge streaming data technology and RAG techniques to deliver
-                            instant, accurate financial insights powered by artificial intelligence.
+                            Harness real-time streaming data and Retrieval-Augmented Generation (RAG) to deliver instant, precise financial insights—powered by cutting-edge AI.
                         </p>
                     </div>
                 </div>
@@ -184,56 +184,57 @@ function About() {
                             {
                                 icon: Brain,
                                 title: 'RAG Technology',
-                                description: 'Advanced retrieval-augmented generation for accurate, context-aware responses',
+                                description: 'Delivering context-aware answers using advanced retrieval-augmented generation.',
                                 color: 'text-purple-400'
                             },
                             {
                                 icon: Database,
                                 title: 'Real-Time Indexing',
-                                description: 'Continuous data ingestion and indexing for up-to-date information',
+                                description: 'Seamless data ingestion and indexing for continuously updated information.',
                                 color: 'text-blue-400'
                             },
                             {
                                 icon: Zap,
                                 title: 'Pathway Platform',
-                                description: 'Powerful streaming data processing for real-time analytics',
+                                description: 'High-performance stream processing for instant, intelligent data flow.',
                                 color: 'text-yellow-400'
                             },
                             {
                                 icon: RefreshCw,
                                 title: 'Live Updates',
-                                description: 'Instant synchronization with latest data sources and market changes',
+                                description: 'Dynamic synchronization with real-time market shifts and data sources.',
                                 color: 'text-green-400'
                             },
                             {
                                 icon: Shield,
                                 title: 'Enterprise Security',
-                                description: 'Robust security measures for enterprise-grade data protection',
+                                description: 'Comprehensive security infrastructure to protect mission-critical data.',
                                 color: 'text-red-400'
                             },
                             {
                                 icon: Cpu,
                                 title: 'AI Integration',
-                                description: 'Advanced LLM integration for intelligent query processing',
+                                description: 'Deep LLM integration for accurate and context-rich responses.',
                                 color: 'text-cyan-400'
-                            },
-                        ].map((tech, index) => (
-                            <div
-                                key={index}
-                                className="tech-card bg-gray-800 rounded-2xl p-8 border border-gray-700 hover:border-blue-400  relative overflow-hidden group"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 opacity-0 group-hover:opacity-100 "></div>
-                                <div className="relative z-10">
-                                    <tech.icon className={`w-12 h-12 ${tech.color} mb-6 pulse-animation`} />
-                                    <h3 className="text-xl font-semibold mb-4 text-white group-hover:text-blue-300 ">
-                                        {tech.title}
-                                    </h3>
-                                    <p className="text-gray-400 group-hover:text-gray-300 ">
-                                        {tech.description}
-                                    </p>
+                            }
+                        ]
+                            .map((tech, index) => (
+                                <div
+                                    key={index}
+                                    className="tech-card bg-gray-800 rounded-2xl p-8 border border-gray-700 hover:border-blue-400  relative overflow-hidden group"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 opacity-0 group-hover:opacity-100 "></div>
+                                    <div className="relative z-10">
+                                        <tech.icon className={`w-12 h-12 ${tech.color} mb-6 pulse-animation`} />
+                                        <h3 className="text-xl font-semibold mb-4 text-white group-hover:text-blue-300 ">
+                                            {tech.title}
+                                        </h3>
+                                        <p className="text-gray-400 group-hover:text-gray-300 ">
+                                            {tech.description}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
                     </div>
                 </div>
             </div>
@@ -253,24 +254,24 @@ function About() {
                         {[
                             {
                                 title: 'Data Ingestion',
-                                description: 'Continuous ingestion of multiple data streams including support tickets, chat transcripts, and financial documents.',
+                                description: 'Aggregates diverse live streams including chats, documents, and support tickets.',
                                 iconColor: 'bg-blue-500'
                             },
                             {
                                 title: 'Real-Time Processing',
-                                description: 'Advanced processing and vectorization of incoming data for immediate availability.',
+                                description: 'Transforms incoming data into usable vectors with minimal latency.',
                                 iconColor: 'bg-purple-500'
                             },
                             {
                                 title: 'Intelligent Retrieval',
-                                description: 'Context-aware retrieval system that finds the most relevant information for each query.',
+                                description: 'Fetches the most contextually relevant results for every query.',
                                 iconColor: 'bg-emerald-500'
                             },
                             {
                                 title: 'AI-Powered Responses',
-                                description: 'Generation of accurate, contextual responses using the latest LLM technology.',
+                                description: 'Generates insightful answers using advanced large language models.',
                                 iconColor: 'bg-cyan-500'
-                            },
+                            }
                         ].map((step, index) => (
                             <div
                                 key={index}
@@ -311,22 +312,22 @@ function About() {
                             {[
                                 {
                                     title: 'Input Layer',
-                                    description: 'Multiple data sources and streams',
+                                    description: 'Ingests multiple data feeds in real time.',
                                     features: ['Market Data', 'News Feeds', 'User Queries'],
                                     color: 'from-blue-500 to-blue-600'
                                 },
                                 {
                                     title: 'Processing Layer',
-                                    description: 'Real-time indexing and vectorization',
+                                    description: 'Handles real-time indexing and vector creation.',
                                     features: ['Stream Processing', 'Vector DB', 'Context Analysis'],
                                     color: 'from-purple-500 to-purple-600'
                                 },
                                 {
                                     title: 'Output Layer',
-                                    description: 'AI-powered responses and insights',
+                                    description: 'Delivers insights and interaction at lightning speed.',
                                     features: ['Interactive Chat', 'Visualizations', 'Alerts'],
                                     color: 'from-emerald-500 to-emerald-600'
-                                },
+                                }
                             ].map((layer, index) => (
                                 <div key={index} className="text-center">
                                     <div className={`bg-gradient-to-r ${layer.color} p-1 rounded-full inline-block mb-6`}>
@@ -337,7 +338,7 @@ function About() {
                                     <p className="text-gray-400 mb-4">{layer.description}</p>
                                     <ul className="space-y-2">
                                         {layer.features.map((feature, i) => (
-                                            <li  key={i} className="text-gray-300 flex items-center justify-center">
+                                            <li key={i} className="text-gray-300 flex items-center justify-center">
                                                 <ChevronRight className="w-4 h-4 text-blue-800 mr-2" />
                                                 {feature}
                                             </li>

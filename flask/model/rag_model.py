@@ -1,3 +1,4 @@
+from flask import jsonify
 import os, io, json
 import openmeteo_requests
 import pdfplumber
@@ -46,7 +47,8 @@ def predict(input_text):
     # --- 🔧 Configuration ---
     # SERVICE_ACCOUNT_FILE = "/home/vaibhaviitian/concrete-area-455907-j8-fffe5bd448b8.json"
     # SERVICE_ACCOUNT_FILE = r"C:\Users\Vaibhav Aryan\OneDrive\Desktop\Hackfest\hackfest2025\flask\concrete-area-455907-j8-fffe5bd448b8.json"
-    SERVICE_ACCOUNT_FILE = r"D:\projects\hackfest 2025\flask\concrete-area-455907-j8-fffe5bd448b8.json"
+    # SERVICE_ACCOUNT_FILE = r"D:\projects\hackfest 2025\flask\concrete-area-455907-j8-fffe5bd448b8.json"
+    SERVICE_ACCOUNT_FILE = r"D:\projects\hackfest 2025\flask\hackfest-pathway-8228655f880d.json"
     CACHE_FILE = "/kaggle/working/file_hashes.json"
     CHUNK_SIZE = 250
     SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -54,11 +56,17 @@ def predict(input_text):
     service = build('drive', 'v3', credentials=creds)
 
     SUBFOLDER_INFO = {
-        "competitor_intel_index": "13m2Di-eOUd-u0n07UCnXVCCdjiDuNr5H",
-        "financial_data_index": "1C0g7GCBMyPKSJGI8jnLhgTfnnO1m9QeA",
-        "market_demographics_index": "1VFCsu7QGfFTf8Cnj7NXe_q0fKtcAHcSh",
-        "product_info_index": "19jKjQRlIqER2uMeqQqs1paCM7ghrkHcs"
+        "competitor_intel_index": "1P8JyuBtWErVtl1gQvzJQxhXzS0JkjzRy",
+        "financial_data_index": "1hQnl8m62GROcnLOjjrPqLlSdoR4sHqT-",
+        "market_demographics_index": "1jz1CvqTdduXZKP5hCX9qKZwZIok1nDlx",
+        "product_info_index": "1tDOIxb_Eh6L5mWdcXhNg4tYfBW8CBVSZ"
     }
+    # SUBFOLDER_INFO = {
+    #     "competitor_intel_index": "13m2Di-eOUd-u0n07UCnXVCCdjiDuNr5H",
+    #     "financial_data_index": "1C0g7GCBMyPKSJGI8jnLhgTfnnO1m9QeA",
+    #     "market_demographics_index": "1VFCsu7QGfFTf8Cnj7NXe_q0fKtcAHcSh",
+    #     "product_info_index": "19jKjQRlIqER2uMeqQqs1paCM7ghrkHcs"
+    # }
 
     # --- 🔄 Load or initialize hash cache ---
     model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -68,59 +76,68 @@ def predict(input_text):
     dfs = {}  # DataFrames for each subfolder
     indexes = {}  # FAISS indexes for each subfolder
     for folder_name, folder_id in SUBFOLDER_INFO.items():
-        print(f"\n📁 Processing folder: {folder_name}")
-        local_dir = os.path.join(os.getcwd(), folder_name)
-        os.makedirs(local_dir, exist_ok=True)
+        try :
+            print(f"\n📁 Processing folder: {folder_name}")
+            local_dir = os.path.join(os.getcwd(), folder_name)
+            os.makedirs(local_dir, exist_ok=True)
 
-        results = service.files().list(
-            q=f"'{folder_id}' in parents and mimeType='application/pdf'",
-            fields="files(id, name, md5Checksum)",
-            pageSize=1000
-        ).execute()
+            results = service.files().list(
+                q=f"'{folder_id}' in parents and mimeType='application/pdf'",
+                fields="files(id, name, md5Checksum)",
+                pageSize=1000
+            ).execute()
 
-        files = results.get('files', [])
-        downloaded_files = []
+            files = results.get('files', [])
+            
+            for item in files:
+                print(f'{item["name"]} ({item["id"]})')
+        
+            downloaded_files = []
 
-        for file in files:
-            fid, name = file['id'], file['name']
-            checksum = file.get('md5Checksum', '')
+            for file in files:
+                fid, name = file['id'], file['name']
+                checksum = file.get('md5Checksum', '')
 
-            print(f"⬇️ Downloading: {name}")
-            request = service.files().get_media(fileId=fid)
-            file_path = os.path.join(local_dir, name)
-            with open(file_path, 'wb') as f:
-                downloader = MediaIoBaseDownload(f, request)
-                done = False
-                while not done:
-                    status, done = downloader.next_chunk()
-            downloaded_files.append(file_path)
+                print(f"⬇️ Downloading: {name}")
+                request = service.files().get_media(fileId=fid)
+                file_path = os.path.join(local_dir, name)
+                with open(file_path, 'wb') as f:
+                    downloader = MediaIoBaseDownload(f, request)
+                    done = False
+                    while not done:
+                        status, done = downloader.next_chunk()
+                downloaded_files.append(file_path)
 
-        # --- 🔍 Text extraction ---
-        for file_path in downloaded_files:
-            try:
-                with pdfplumber.open(file_path) as pdf:
-                    extracted_text = "\n".join(page.extract_text() or "" for page in pdf.pages)
-            except Exception as e:
-                print(f"❌ Failed to read {file_path}: {e}")
-                continue
+            # --- 🔍 Text extraction ---
+            for file_path in downloaded_files:
+                try:
+                    with pdfplumber.open(file_path) as pdf:
+                        extracted_text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+                except Exception as e:
+                    print(f"❌ Failed to read {file_path}: {e}")
+                    continue
 
-            chunks = [extracted_text[i:i+CHUNK_SIZE] for i in range(0, len(extracted_text), CHUNK_SIZE)]
-            for i, chunk in enumerate(chunks):
-                if chunk.strip():
-                    all_records.append({
-                        "folder": folder_name,
-                        "title": os.path.basename(file_path),
-                        "chunk_id": i,
-                        "text": chunk
-                    })
+                chunks = [extracted_text[i:i+CHUNK_SIZE] for i in range(0, len(extracted_text), CHUNK_SIZE)]
+                for i, chunk in enumerate(chunks):
+                    if chunk.strip():
+                        all_records.append({
+                            "folder": folder_name,
+                            "title": os.path.basename(file_path),
+                            "chunk_id": i,
+                            "text": chunk
+                        })
 
-        # --- 🗑️ Delete downloaded files ---
-        for file_path in downloaded_files:
-            try:
-                os.remove(file_path)
-                print(f"🗑️ Deleted: {file_path}")
-            except Exception as e:
-                print(f"⚠️ Could not delete {file_path}: {e}")
+            # --- 🗑️ Delete downloaded files ---
+            for file_path in downloaded_files:
+                try:
+                    os.remove(file_path)
+                    print(f"🗑️ Deleted: {file_path}")
+                except Exception as e:
+                    print(f"⚠️ Could not delete {file_path}: {e}")
+
+        except Exception as e:
+            print(e)
+            return jsonify({"error": str(e)}), 500
 
     # --- 🧠 Create a single unified DataFrame and Index ---
     if all_records:

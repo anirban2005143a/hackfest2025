@@ -8,6 +8,8 @@ import AuthContext from "../../Context/Authcontext.js";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify"
 import defaultUserImg from "/user.png"
+import ReactMarkdown from "react-markdown"
+import rehypeRaw from "rehype-raw"
 
 function Dashboard() {
 
@@ -183,6 +185,7 @@ function Dashboard() {
     if (isAuthenticated === false) navigate("/auth/login")
   }, [isAuthenticated])
 
+
   console.log(data)
 
   return (
@@ -215,7 +218,7 @@ function Dashboard() {
                   </h1>
 
                   <div className="space-y-2 sm:space-y-3">
-                    {data.map((chat) => (
+                    {[...data].reverse().map((chat) => (
                       <motion.div
                         key={chat.chatId}
                         className="rounded-lg overflow-hidden"
@@ -256,7 +259,7 @@ function Dashboard() {
                               className="overflow-hidden"
                             >
                               <div className="p-2 sm:p-4 space-y-2 sm:space-y-4">
-                                {chat.chatList.map((item, ind) => (
+                                {[...chat.chatList].reverse().map((item, ind) => (
                                   <motion.div
                                     key={ind}
                                     className="space-y-2 sm:space-y-3"
@@ -265,31 +268,19 @@ function Dashboard() {
                                     transition={{ delay: ind * 0.05 }}
                                   >
                                     {/* Question */}
-                                    <motion.div
+                                    {item.question && <motion.div
                                       className="bg-blue-900/30 p-3 sm:p-4 rounded-lg border-l-4 border-blue-500 max-w-full overflow-hidden"
                                       whileHover={{ scale: 1.01 }}
                                     >
                                       <div className="flex items-start gap-2 sm:gap-3">
-                                        <div className="bg-blue-500 text-white p-1 rounded-full flex-shrink-0">
-                                          <svg
-                                            className="w-3 h-3 sm:w-4 sm:h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                            />
-                                          </svg>
+                                      <div className="bg-green-500 text-white p-1 rounded-full flex-shrink-0">
+                                          <User size={20} />
                                         </div>
                                         <p className="text-white font-medium break-words whitespace-pre-wrap text-sm sm:text-base">
                                           {item.question}
                                         </p>
                                       </div>
-                                    </motion.div>
+                                    </motion.div>}
 
                                     {/* Answer */}
                                     <motion.div
@@ -297,20 +288,9 @@ function Dashboard() {
                                       whileHover={{ scale: 1.01 }}
                                     >
                                       <div className="flex items-start gap-2 sm:gap-3">
-                                        <div className="bg-green-500 text-white p-1 rounded-full flex-shrink-0">
-                                          <svg
-                                            className="w-3 h-3 sm:w-4 sm:h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M13 10V3L4 14h7v7l9-11h-7z"
-                                            />
-                                          </svg>
+                                        
+                                        <div className="bg-blue-500 text-white p-1 rounded-full flex-shrink-0">
+                                          <Bot />
                                         </div>
                                         <div className="text-gray-300 break-words whitespace-pre-wrap text-sm sm:text-base">
                                           {Array.isArray(item.answer) ? (
@@ -319,11 +299,11 @@ function Dashboard() {
                                                 key={ansIndex}
                                                 className="mb-1 sm:mb-2 last:mb-0"
                                               >
-                                                {ans}
+                                                <ReactMarkdown children={ans} rehypePlugins={[rehypeRaw]} />
                                               </p>
                                             ))
                                           ) : (
-                                            <p>{item.answer}</p>
+                                            <ReactMarkdown children={item.answer} rehypePlugins={[rehypeRaw]} />
                                           )}
                                         </div>
                                       </div>
@@ -359,54 +339,58 @@ function Dashboard() {
                       </motion.div>
                     ) : (
                       <div className="space-y-4">
-                        {[...data[data.length - 1 - click].chatList].reverse().map((item, ind) => (
-                          <motion.div
-                            key={ind}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: ind * 0.1 }}
-                            className="space-y-3"
-                          >
+                        {[...data[data.length - 1 - click].chatList].reverse().map((item, ind) => {
+                          console.log(item)
+                          return (
                             <motion.div
-                              whileHover={{ scale: 1.01 }}
-                              className="bg-blue-900/30 p-4 rounded-lg border-l-4 border-blue-500"
+                              key={ind}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: ind * 0.1 }}
+                              className="space-y-3"
                             >
-                              <div className="flex items-start gap-3">
-                                <div className="bg-blue-500 text-white p-1 rounded-full flex-shrink-0">
-                                  <Bot />
-                                </div>
-                                <p className="text-white font-medium">
-                                  {item.question}
-                                </p>
-                              </div>
-                            </motion.div>
+                              {item.question && <motion.div
+                                whileHover={{ scale: 1.01 }}
+                                className="bg-blue-900/30 p-4 rounded-lg border-l-4 border-blue-500"
+                              >
+                                <div className="flex items-start gap-3">
 
-                            <motion.div
-                              whileHover={{ scale: 1.01 }}
-                              className="bg-gray-700/50 p-4 rounded-lg border-l-4 border-green-500 ml-8"
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className="bg-green-500 text-white p-1 rounded-full flex-shrink-0">
-                                  <User size={20} />
+                                  <div className="bg-green-500 text-white p-1 rounded-full flex-shrink-0">
+                                    <User size={20} />
+                                  </div>
+                                  <p className="text-white font-medium">
+                                    {item.question}
+                                  </p>
                                 </div>
-                                <div className="text-gray-300">
-                                  {Array.isArray(item.answer) ? (
-                                    item.answer.map((ans, ansIndex) => (
-                                      <p key={ansIndex} className="mb-2 last:mb-0">
-                                        {ans}
-                                      </p>
-                                    ))
-                                  ) : (
-                                    <p>{item.answer}</p>
-                                  )}
+                              </motion.div>}
+
+                              <motion.div
+                                whileHover={{ scale: 1.01 }}
+                                className="bg-gray-700/50 p-4 rounded-lg border-l-4 border-green-500 ml-8"
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="bg-blue-500 text-white p-1 rounded-full flex-shrink-0">
+                                    <Bot />
+                                  </div>
+                                  <div className="text-gray-300">
+                                    {Array.isArray(item.answer) ? (
+                                      item.answer.map((ans, ansIndex) => (
+                                        <p key={ansIndex} className="mb-2 last:mb-0">
+                                          <ReactMarkdown children={ans} rehypePlugins={[rehypeRaw]} />
+                                        </p>
+                                      ))
+                                    ) : (
+                                      <ReactMarkdown children={item.answer} rehypePlugins={[rehypeRaw]} />
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                              <p className="text-gray-500 text-xs mt-2">
-                                {getTimeAgo(item.createdAt)}
-                              </p>
+                                <p className="text-gray-500 text-xs mt-2">
+                                  {getTimeAgo(item.createdAt)}
+                                </p>
+                              </motion.div>
                             </motion.div>
-                          </motion.div>
-                        ))}
+                          )
+                        })}
                       </div>
                     )}
                   </div>
@@ -426,7 +410,7 @@ function Dashboard() {
                         key={item.id || index}
                         className="group relative border-l-2 border-blue-500 pl-4 hover:bg-gray-800/50 transition-colors rounded cursor-pointer"
                       >
-                        <button
+                        <div
                           className="w-full text-left"
                           onClick={() => {
                             setClick(index);
@@ -453,7 +437,7 @@ function Dashboard() {
                               </button>
                             </div>
                           </div>
-                        </button>
+                        </div>
                       </div>
                     );
                   })}

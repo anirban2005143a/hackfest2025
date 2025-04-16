@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Send, Bot, User, Loader2, MicOff, Mic } from "lucide-react";
 import { saveChatResponse } from "./functions/saveChat";
-import { useParams } from "react-router-dom";
 import { getChatInfo } from "./functions/getChatInfo";
 import { getresponse } from "./functions/getanswer";
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 const ChatWindow = ({
   isChatInfoFetching,
@@ -27,7 +27,6 @@ const ChatWindow = ({
   const recognitionRef = useRef(null);
   const [isBrowserSupported, setIsBrowserSupported] = useState(true);
 
-  const params = useParams();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -118,13 +117,6 @@ const ChatWindow = ({
       .replace(/\\'/g, "'") // \' -> '
       .replace(/\\\\/g, "\\"); // \\ -> \
   }
-
-  // console.log(convertToFormattedHTML("Hi!\\nThis is *italic*.\\nThis is **bold** and _also italic_."))
-
-  // useEffect(() => {
-  //   console.log("ChatWindow mounted");
-  //   getanswer("Capital of India?");
-  // } , [])
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -298,8 +290,8 @@ const ChatWindow = ({
                           </div>
                           <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
                             <div className="text-sm">
-                              <ReactMarkdown>{message.answer[0]}</ReactMarkdown>
-                            </div>
+                              {/* <ReactMarkdown>{message.answer[0]}</ReactMarkdown> */}
+                              <ReactMarkdown children={message.answer[0]} rehypePlugins={[rehypeRaw]} />                            </div>
                           </div>
                         </div>
                       </div>
