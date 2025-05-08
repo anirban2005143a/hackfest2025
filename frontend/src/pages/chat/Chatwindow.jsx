@@ -98,9 +98,14 @@ const ChatWindow = ({
   };
 
   const getAnswer = async (input) => {
-    const res = await getresponse(input);
+    // const res = await getresponse(input);
+    const res = await new Promise((res , rej)=>{
+      setTimeout(() => {
+        res("demo reponse from ai model")
+      }, 1000);
+    });
     console.log(res);
-    // convertToFormattedHTML(res);
+    
     const convertedText = convertToFormattedHTML(res);
     setanswer(convertedText);
   };
