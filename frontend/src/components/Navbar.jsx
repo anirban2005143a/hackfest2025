@@ -40,6 +40,7 @@ const Navbar = ({ setIsNavOpen, isNavOpen }) => {
         setIsVisible(true); // Show on scroll up
       }
       lastScrollY = window.scrollY;
+      console.log(AuthContext);
     };
 
     window.addEventListener("scroll", handleScroll);
