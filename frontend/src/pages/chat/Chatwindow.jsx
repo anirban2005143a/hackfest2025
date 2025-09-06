@@ -3,8 +3,9 @@ import { Send, Bot, User, Loader2, MicOff, Mic } from "lucide-react";
 import { saveChatResponse } from "./functions/saveChat";
 import { getChatInfo } from "./functions/getChatInfo";
 import { getresponse } from "./functions/getanswer";
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import axios from "axios";
 
 const ChatWindow = ({
   isChatInfoFetching,
@@ -27,7 +28,6 @@ const ChatWindow = ({
   const recognitionRef = useRef(null);
   const [isBrowserSupported, setIsBrowserSupported] = useState(true);
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -38,7 +38,7 @@ const ChatWindow = ({
       // _id: uuidv4(),
       createdAt: new Date().toISOString(),
     };
-
+    console.log(newMessage);
     setMessages((prev) => [...prev, newMessage]);
     setquestion(input);
     setInput("");
@@ -99,15 +99,27 @@ const ChatWindow = ({
 
   const getAnswer = async (input) => {
     // const res = await getresponse(input);
-    const res = await new Promise((res , rej)=>{
-      setTimeout(() => {
-        res("demo reponse from ai model")
-      }, 1000);
-    });
-    console.log(res);
-    
-    const convertedText = convertToFormattedHTML(res);
-    setanswer(convertedText);
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_API_URL}/api/chat/getanswer`,
+        { input },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // const convertedText = convertToFormattedHTML(res);
+      // setanswer(convertedText);
+      console.log(res);
+      setanswer(res.data.data.output);
+    } catch (error) {
+      console.log(error);
+      setisFetching(false);
+      setisReady(true);
+      console.log(error);
+    }
   };
 
   // convert /n text to normal text
@@ -296,7 +308,11 @@ const ChatWindow = ({
                           <div className="px-4 py-2 w-full bg-gray-800 text-gray-100 rounded-bl-2xl rounded-r-2xl">
                             <div className="text-sm">
                               {/* <ReactMarkdown>{message.answer[0]}</ReactMarkdown> */}
-                              <ReactMarkdown children={message.answer[0]} rehypePlugins={[rehypeRaw]} />                            </div>
+                              <ReactMarkdown
+                                children={message.answer[0]}
+                                rehypePlugins={[rehypeRaw]}
+                              />{" "}
+                            </div>
                           </div>
                         </div>
                       </div>

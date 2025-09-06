@@ -123,6 +123,7 @@ function Login() {
     // Proceed with form submission if no errors
     try {
       setisLoading(true)
+      console.log(formData)
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/login`,
         formData

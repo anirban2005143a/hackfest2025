@@ -166,24 +166,31 @@ const chatinfo = async (req, res) => {
 const getanswer = async (req, res) => {
   try {
     const { input } = req.body;
-    if(!input) {
-      return res.status(400).json({ error: true, message: "Input is required" });
-    }
     console.log(input);
-
-    // Call Flask API
+    if (!input) {
+      return res
+        .status(400)
+        .json({ error: true, message: "Input is required" });
+    }
     console.log(process.env.FLASK_API_URL);
-    const response = await axios.post(`${process.env.FLASK_API_URL}/predict`, {
+    const response = await axios.post(`${process.env.FLASK_API_URL}/run_rag`, {
       input: input,
     });
-    console.log(response.data);
+    // console.log(response);
+    // console.log(response.data.error==false){};
     return res.json({
       error: false,
       data: response.data,
       message: "Response from AI service",
     });
   } catch (error) {
-    console.error(error.response.data.message || error.response.message || error.details || error.message || error);
+    console.error(
+      error.response.data.message ||
+        error.response.message ||
+        error.details ||
+        error.message ||
+        error
+    );
     return res.status(500).json({
       error: true,
       message: "Failed to get response from AI service",
